@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentCar — Аренда автомобилей в Ташкенте</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1a6cff;
+  --blue-dark: #1457d4;
+  --blue-glow: rgba(26,108,255,0.25);
+  --gold: #f5b731;
+  --green: #22c55e;
+  --red: #ef4444;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: 0.25s ease;
+}
+[data-theme="dark"] {
+  --bg: #0d0f14;
+  --bg2: #13161e;
+  --bg3: #1a1e2a;
+  --bg4: #222736;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0f2f8;
+  --text2: #9aa3b8;
+  --text3: #6b7494;
+  --card-bg: #161b27;
+  --header-bg: rgba(13,15,20,0.95);
+  --modal-bg: #161b27;
+  --input-bg: #1a1e2a;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+[data-theme="light"] {
+  --bg: #f4f6fb;
+  --bg2: #ffffff;
+  --bg3: #eef0f7;
+  --bg4: #e4e7f2;
+  --border: rgba(0,0,0,0.1);
+  --text: #111827;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --card-bg: #ffffff;
+  --header-bg: rgba(255,255,255,0.97);
+  --modal-bg: #ffffff;
+  --input-bg: #f4f6fb;
+  --shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--transition),color var(--transition)}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit;border:none}
+input,select{font-family:inherit}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--blue);border-radius:3px}
+
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--header-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:all var(--transition)}
+.header-inner{max-width:1440px;margin:0 auto;padding:0 24px;height:70px;display:flex;align-items:center;gap:20px}
+.logo{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:900;color:var(--text);flex-shrink:0}
+.logo-icon{color:var(--blue);font-size:28px}
+.logo span{color:var(--blue)}
+.nav{display:flex;gap:4px;flex:1;justify-content:center}
+.nav a{padding:8px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--text2);transition:all var(--transition);white-space:nowrap}
+.nav a:hover,.nav a.active{color:var(--text);background:var(--bg3)}
+.nav a.active{color:var(--blue)}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.header-location{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);padding:0 8px}
+.header-location svg{color:var(--blue)}
+.header-phone{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap}
+.btn{padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;transition:all var(--transition);display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 16px var(--blue-glow)}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);background:var(--bg4)}
+.btn-outline{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn-outline:hover{background:var(--blue);color:#fff}
+.theme-toggle{width:38px;height:38px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px;transition:all var(--transition)}
+.theme-toggle:hover{background:var(--bg4)}
+.admin-btn{background:linear-gradient(135deg,#f5b731,#e09620);color:#000;font-weight:700;font-size:12px;padding:8px 14px;border-radius:var(--radius-sm);display:none;align-items:center;gap:5px;animation:pulse-gold 2s infinite}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 0 rgba(245,183,49,0.4)}50%{box-shadow:0 0 0 8px rgba(245,183,49,0)}}
+
+/* HERO */
+.hero{padding-top:70px;min-height:540px;position:relative;overflow:hidden;background:linear-gradient(135deg,#0a0c14 0%,#111827 50%,#0d1525 100%)}
+[data-theme="light"] .hero{background:linear-gradient(135deg,#1a2744 0%,#0d1f4a 50%,#1a2744 100%)}
+.hero-bg{position:absolute;inset:0;overflow:hidden}
+.hero-bg::before{content:'';position:absolute;right:-100px;top:-50px;width:70%;height:120%;background:url('https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1200&q=80') center/cover;opacity:0.18;mask-image:linear-gradient(to left,rgba(0,0,0,0.8),rgba(0,0,0,0))}
+.hero-inner{max-width:1440px;margin:0 auto;padding:60px 24px 40px;display:grid;grid-template-columns:1fr 380px;gap:40px;align-items:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(26,108,255,0.15);border:1px solid rgba(26,108,255,0.3);color:var(--blue);font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,4vw,54px);font-weight:900;line-height:1.1;color:#fff;margin-bottom:16px}
+.hero-sub{font-size:15px;color:rgba(255,255,255,0.6);line-height:1.7;margin-bottom:28px;max-width:480px}
+.hero-features{display:flex;gap:24px;flex-wrap:wrap}
+.hero-feature{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.7);font-weight:500}
+.hero-feature svg{color:var(--blue)}
+
+/* SEARCH FORM */
+.search-form{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+[data-theme="dark"] .search-form{background:rgba(22,27,39,0.95);backdrop-filter:blur(20px)}
+.search-form h3{font-size:16px;font-weight:700;margin-bottom:18px;color:var(--text)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+.form-control{background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;color:var(--text);transition:all var(--transition);outline:none;width:100%}
+.form-control:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
+.form-control option{background:var(--bg2);color:var(--text)}
+.search-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border-radius:var(--radius-sm);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all var(--transition);margin-top:4px}
+.search-btn:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 6px 20px var(--blue-glow)}
+.reset-btn{width:100%;padding:10px;background:transparent;color:var(--text2);border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition);margin-top:2px}
+.reset-btn:hover{color:var(--text)}
+
+/* SECTIONS */
+.section{max-width:1440px;margin:0 auto;padding:60px 24px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.section-title{font-size:clamp(22px,3vw,32px);font-weight:800}
+.section-link{color:var(--blue);font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px;transition:gap var(--transition)}
+.section-link:hover{gap:8px}
+
+/* CATEGORIES */
+.categories-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.category-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:all var(--transition);position:relative;overflow:hidden}
+.category-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--blue),transparent);opacity:0;transition:opacity var(--transition)}
+.category-card:hover{border-color:var(--blue);transform:translateY(-3px);box-shadow:0 8px 24px var(--blue-glow)}
+.category-card:hover::before{opacity:0.05}
+.cat-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.cat-price{font-size:12px;color:var(--blue);font-weight:600}
+.cat-img{width:100%;height:90px;object-fit:contain;margin-top:10px;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3))}
+.cat-img-placeholder{width:100%;height:90px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-top:10px}
+
+/* AUTOPARK */
+.autopark-section{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.autopark-inner{max-width:1440px;margin:0 auto;padding:60px 24px}
+.autopark-layout{display:grid;grid-template-columns:240px 1fr;gap:28px;align-items:start}
+.filters{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;position:sticky;top:90px}
+.filters-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.filters-title{font-size:15px;font-weight:700}
+.filters-reset{font-size:13px;color:var(--blue);cursor:pointer;font-weight:600}
+.filter-group{margin-bottom:20px}
+.filter-group-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.price-range{margin-bottom:8px}
+.price-slider{width:100%;-webkit-appearance:none;height:4px;background:var(--blue);border-radius:2px;outline:none;cursor:pointer}
+.price-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--blue);border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px var(--blue-glow)}
+.price-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:8px}
+.filter-checkbox{display:flex;align-items:center;justify-content:space-between;padding:6px 0;cursor:pointer;font-size:13px;color:var(--text2);transition:color var(--transition)}
+.filter-checkbox:hover{color:var(--text)}
+.filter-checkbox input{accent-color:var(--blue);margin-right:8px;width:15px;height:15px}
+.filter-checkbox span{display:flex;align-items:center;gap:8px;flex:1}
+.filter-count{font-size:11px;color:var(--text3);background:var(--bg3);padding:1px 6px;border-radius:10px}
+.cars-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.cars-found{font-size:14px;color:var(--text2)}
+.cars-found strong{color:var(--text)}
+.cars-sort select{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;color:var(--text);outline:none;cursor:pointer}
+.cars-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
+/* CAR CARD */
+.car-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all var(--transition);position:relative}
+.car-card:hover{border-color:var(--blue);transform:translateY(-4px);box-shadow:0 12px 32px var(--blue-glow)}
+.car-badge{position:absolute;top:12px;left:12px;z-index:2;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.badge-hit{background:#ef4444;color:#fff}
+.badge-premium{background:var(--gold);color:#000}
+.badge-vip{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff}
+.badge-electric{background:var(--green);color:#fff}
+.badge-new{background:var(--blue);color:#fff}
+.car-img-wrap{height:190px;overflow:hidden;background:linear-gradient(135deg,var(--bg3),var(--bg4));display:flex;align-items:center;justify-content:center;position:relative}
+.car-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease}
+.car-card:hover .car-img-wrap img{transform:scale(1.05)}
+.car-img-placeholder{font-size:80px;opacity:0.15}
+.car-body{padding:16px}
+.car-name{font-size:16px;font-weight:800;margin-bottom:2px;color:var(--text)}
+.car-meta{font-size:12px;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.car-meta span::before{content:'•';margin-right:6px}
+.car-meta span:first-child::before{display:none}
+.car-specs{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:10px;background:var(--bg3);border-radius:var(--radius-sm)}
+.car-spec{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);font-weight:500}
+.car-spec svg{color:var(--blue);flex-shrink:0}
+.car-price{font-size:18px;font-weight:800;color:var(--text);margin-bottom:14px}
+.car-price span{font-size:13px;font-weight:500;color:var(--text2)}
+.car-actions{display:flex;gap:8px}
+.car-actions .btn{flex:1;justify-content:center;font-size:13px;padding:9px}
+.car-actions-admin{display:none;gap:6px;margin-top:8px}
+.is-admin .car-actions-admin{display:flex}
+.admin-action{flex:1;padding:7px;font-size:12px;border-radius:6px;font-weight:600;text-align:center;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all var(--transition)}
+.admin-action:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.admin-action.del:hover{background:var(--red);border-color:var(--red)}
+
+/* ADVANTAGES */
+.advantages{background:var(--bg)}
+.advantages-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
+.adv-card{text-align:center;padding:24px 16px}
+.adv-icon{width:56px;height:56px;border-radius:50%;background:rgba(26,108,255,0.1);border:1px solid rgba(26,108,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px}
+.adv-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.adv-desc{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* REVIEWS */
+.reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.review-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px}
+.review-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.reviewer{display:flex;align-items:center;gap:12px}
+.reviewer-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--blue),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+.reviewer-name{font-size:14px;font-weight:700}
+.reviewer-date{font-size:12px;color:var(--text2)}
+.stars{color:var(--gold);font-size:13px;letter-spacing:1px}
+.review-text{font-size:13px;color:var(--text2);line-height:1.7}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:50px 24px 24px}
+.footer-inner{max-width:1440px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:40px}
+.footer-brand .logo{font-size:20px;margin-bottom:14px}
+.footer-tagline{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px}
+.footer-socials{display:flex;gap:10px}
+.social-btn{width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all var(--transition)}
+.social-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff;transform:translateY(-2px)}
+.footer-col h4{font-size:14px;font-weight:700;margin-bottom:16px}
+.footer-col a{display:block;font-size:13px;color:var(--text2);margin-bottom:10px;transition:color var(--transition)}
+.footer-col a:hover{color:var(--blue)}
+.footer-contact{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);margin-bottom:10px}
+.newsletter{display:flex;gap:8px;margin-top:12px}
+.newsletter input{flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none}
+.newsletter input:focus{border-color:var(--blue)}
+.newsletter button{padding:10px 14px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:background var(--transition)}
+.newsletter button:hover{background:var(--blue-dark)}
+.footer-bottom{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2)}
+.footer-links{display:flex;gap:20px}
+.footer-links a:hover{color:var(--blue)}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--modal-bg);border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:420px;position:relative;box-shadow:var(--shadow);animation:modal-in 0.3s ease}
+@keyframes modal-in{from{opacity:0;transform:translateY(20px) scale(0.97)}to{opacity:1;transform:none}}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2);transition:all var(--transition)}
+.modal-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.modal h2{font-size:22px;font-weight:800;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.modal-form{display:flex;flex-direction:column;gap:14px}
+.phone-wrap{position:relative;display:flex}
+.phone-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:600;color:var(--text);z-index:1;pointer-events:none}
+.phone-input-field{padding-left:56px!important}
+.modal-footer{text-align:center;margin-top:8px;font-size:13px;color:var(--text2)}
+.modal-footer a{color:var(--blue);font-weight:600}
+.modal-footer a:hover{text-decoration:underline}
+.error-msg{font-size:12px;color:var(--red);font-weight:500}
+
+/* CAR DETAIL MODAL */
+.car-detail-modal{max-width:700px}
+.car-detail-img{width:100%;height:240px;object-fit:cover;border-radius:12px;margin-bottom:20px}
+.car-detail-info{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.car-detail-specs{background:var(--bg3);border-radius:12px;padding:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.car-detail-spec{text-align:center}
+.car-detail-spec-icon{font-size:22px;margin-bottom:4px}
+.car-detail-spec-label{font-size:11px;color:var(--text2)}
+.car-detail-spec-val{font-size:13px;font-weight:700}
+.car-detail-price{font-size:28px;font-weight:900;color:var(--blue);margin-bottom:20px}
+.car-detail-price span{font-size:14px;color:var(--text2);font-weight:500}
+
+/* ADMIN PANEL MODAL */
+.admin-panel-modal{max-width:520px}
+.admin-section{background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px}
+.admin-section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text2);margin-bottom:12px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.admin-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.admin-stat-num{font-size:24px;font-weight:900;color:var(--blue)}
+.admin-stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* EDIT CAR MODAL */
+.edit-car-modal{max-width:480px}
+
+/* NOTIFICATIONS */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--blue);color:#fff;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.4s ease;max-width:320px;box-shadow:0 8px 24px var(--blue-glow)}
+.toast.show{transform:none;opacity:1}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.categories-grid{grid-template-columns:repeat(3,1fr)}.cars-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:1fr 1fr;gap:24px}.advantages-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.autopark-layout{grid-template-columns:1fr}.filters{position:static}.hero-inner{grid-template-columns:1fr}.search-form{max-width:500px}.reviews-grid{grid-template-columns:1fr 1fr}.nav{display:none}.header-location{display:none}}
+@media(max-width:600px){.cars-grid{grid-template-columns:1fr}.categories-grid{grid-template-columns:repeat(2,1fr)}.advantages-grid{grid-template-columns:repeat(2,1fr)}.reviews-grid{grid-template-columns:1fr}.footer-grid{grid-template-columns:1fr}.footer-bottom{flex-direction:column;gap:12px;text-align:center}.hero h1{font-size:28px}.header-phone{display:none}.form-grid{grid-template-columns:1fr}}
+
+/* MOBILE MENU */
+.mobile-menu-btn{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px}
+@media(max-width:900px){.mobile-menu-btn{display:flex}}
+.mobile-menu-btn span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:all var(--transition)}
+.mobile-nav{position:fixed;top:70px;left:0;right:0;background:var(--header-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 24px;display:none;flex-direction:column;gap:4px;z-index:999}
+.mobile-nav.open{display:flex}
+.mobile-nav a{padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--text2);transition:all var(--transition)}
+.mobile-nav a:hover{color:var(--text);background:var(--bg3)}
+
+/* BOOKING STEPS */
+.booking-steps{display:flex;gap:8px;margin-bottom:20px}
+.step{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background 0.3s}
+.step.active{background:var(--blue)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">🚗</span>
+      RENT<span>CAR</span>
+    </div>
+    <nav class="nav">
+      <a href="#" class="active">Главная</a>
+      <a href="#autopark">Автопарк</a>
+      <a href="#conditions">Условия</a>
+      <a href="#about">О компании</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <div class="header-right">
+      <div class="header-location">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Ташкент
+      </div>
+      <a href="https://t.me/rentcaruzb" target="_blank" class="btn btn-ghost" style="padding:8px 10px;font-size:16px">✈</a>
+      <div class="header-phone">📞 +998 71 200 00 01</div>
+      <button class="theme-toggle" id="themeToggle" title="Тема">🌙</button>
+      <button class="btn btn-ghost" onclick="openModal('loginModal')">Войти</button>
+      <button class="btn btn-primary" onclick="openModal('regModal')">Регистрация</button>
+      <button class="admin-btn" id="adminPanelBtn" onclick="openModal('adminModal')">👑 Админ панель</button>
+    </div>
+    <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</header>
+<nav class="mobile-nav" id="mobileNav">
+  <a href="#">Главная</a>
+  <a href="#autopark">Автопарк</a>
+  <a href="#conditions">Условия</a>
+  <a href="#about">О компании</a>
+  <a href="#contacts">Контакты</a>
+  <a href="#" onclick="openModal('loginModal')">Войти</a>
+  <a href="#" onclick="openModal('regModal')">Регистрация</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">🏙 Аренда автомобилей в Ташкенте</div>
+      <h1>Аренда автомобилей<br>на любых условиях</h1>
+      <p class="hero-sub">От эконом до премиум-класса. Быстрое бронирование, чистые авто, лучший сервис.</p>
+      <div class="hero-features">
+        <div class="hero-feature"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Без залога</div>
+        <div class="hero-feature"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.05 4.04 2 2 0 012.03 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg> Поддержка 24/7</div>
+        <div class="hero-feature"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg> Доставка в аэропорт</div>
+      </div>
+    </div>
+    <div class="search-form">
+      <h3>Найдите свой автомобиль</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Марка</label>
+          <select class="form-control" id="searchBrand">
+            <option value="">Любая марка</option>
+            <option>Chevrolet</option>
+            <option>Kia</option>
+            <option>Hyundai</option>
+            <option>BYD</option>
+            <option>BMW</option>
+            <option>Toyota</option>
+            <option>Mercedes-Benz</option>
+            <option>Lexus</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Цена за сутки</label>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:4px;align-items:center">
+            <input type="number" class="form-control" placeholder="От" id="priceFrom" value="300000">
+            <span style="color:var(--text2);font-size:12px">—</span>
+            <input type="number" class="form-control" placeholder="До" id="priceTo">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Дата получения</label>
+          <input type="date" class="form-control" id="dateFrom">
+        </div>
+        <div class="form-group">
+          <label>Тип кузова</label>
+          <select class="form-control" id="searchType">
+            <option value="">Любой тип</option>
+            <option>Седан</option>
+            <option>Кроссовер</option>
+            <option>Внедорожник</option>
+            <option>Минивэн</option>
+            <option>Пикап</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Коробка передач</label>
+          <select class="form-control" id="searchGear">
+            <option value="">Любая</option>
+            <option>Автомат</option>
+            <option>Механика</option>
+          </select>
+        </div>
+      </div>
+      <button class="search-btn" onclick="applySearch()">🔍 Найти авто</button>
+      <button class="reset-btn" onclick="resetSearch()">Сбросить фильтры</button>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<div class="section">
+  <div class="section-header">
+    <h2 class="section-title">Популярные категории</h2>
+    <a href="#autopark" class="section-link">Смотреть все →</a>
+  </div>
+  <div class="categories-grid">
+    <div class="category-card" onclick="filterByType('Седан')">
+      <div class="cat-name">Эконом</div>
+      <div class="cat-price">от 300 000 сум</div>
+      <div class="cat-img-placeholder">🚗</div>
+    </div>
+    <div class="category-card" onclick="filterByType('Премиум')">
+      <div class="cat-name">Премиум</div>
+      <div class="cat-price">от 800 000 сум</div>
+      <div class="cat-img-placeholder">🏎</div>
+    </div>
+    <div class="category-card" onclick="filterByType('Кроссовер')">
+      <div class="cat-name">Кроссоверы</div>
+      <div class="cat-price">от 600 000 сум</div>
+      <div class="cat-img-placeholder">🚙</div>
+    </div>
+    <div class="category-card" onclick="filterByType('Внедорожник')">
+      <div class="cat-name">Внедорожники</div>
+      <div class="cat-price">от 1 000 000 сум</div>
+      <div class="cat-img-placeholder">🛻</div>
+    </div>
+    <div class="category-card" onclick="filterByType('Минивэн')">
+      <div class="cat-name">Минивэны</div>
+      <div class="cat-price">от 700 000 сум</div>
+      <div class="cat-img-placeholder">🚐</div>
+    </div>
+  </div>
+</div>
+
+<!-- AUTOPARK -->
+<section class="autopark-section" id="autopark">
+  <div class="autopark-inner">
+    <div class="section-header">
+      <h2 class="section-title">Автопарк</h2>
+    </div>
+    <div class="autopark-layout">
+      <aside class="filters">
+        <div class="filters-header">
+          <span class="filters-title">Фильтры</span>
+          <span class="filters-reset" onclick="resetFilters()">Сбросить</span>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Цена за сутки</div>
+          <input type="range" class="price-slider" min="300000" max="5000000" value="5000000" id="priceFilter" oninput="applyFilters()">
+          <div class="price-labels">
+            <span>300 000 сум</span>
+            <span id="priceFilterVal">5 000 000 сум</span>
+          </div>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Марка</div>
+          <label class="filter-checkbox"><input type="checkbox" value="Chevrolet" onchange="applyFilters()"><span>Chevrolet <span class="filter-count">12</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Kia" onchange="applyFilters()"><span>Kia <span class="filter-count">8</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Hyundai" onchange="applyFilters()"><span>Hyundai <span class="filter-count">7</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="BYD" onchange="applyFilters()"><span>BYD <span class="filter-count">5</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="BMW" onchange="applyFilters()"><span>BMW <span class="filter-count">4</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Toyota" onchange="applyFilters()"><span>Toyota <span class="filter-count">6</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Mercedes-Benz" onchange="applyFilters()"><span>Mercedes <span class="filter-count">4</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Lexus" onchange="applyFilters()"><span>Lexus <span class="filter-count">4</span></span></label>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Тип кузова</div>
+          <label class="filter-checkbox"><input type="checkbox" value="Седан" onchange="applyFilters()"><span>Седан <span class="filter-count">18</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Кроссовер" onchange="applyFilters()"><span>Кроссовер <span class="filter-count">10</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Внедорожник" onchange="applyFilters()"><span>Внедорожник <span class="filter-count">6</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Минивэн" onchange="applyFilters()"><span>Минивэн <span class="filter-count">4</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Пикап" onchange="applyFilters()"><span>Пикап <span class="filter-count">4</span></span></label>
+        </div>
+        <div class="filter-group">
+          <div class="filter-group-title">Коробка передач</div>
+          <label class="filter-checkbox"><input type="checkbox" value="Автомат" onchange="applyFilters()"><span>Автомат <span class="filter-count">38</span></span></label>
+          <label class="filter-checkbox"><input type="checkbox" value="Механика" onchange="applyFilters()"><span>Механика <span class="filter-count">12</span></span></label>
+        </div>
+      </aside>
+
+      <div class="cars-area">
+        <div class="cars-header">
+          <div class="cars-found">Найдено: <strong id="carsCount">50</strong> автомобилей</div>
+          <div class="cars-sort">
+            <select onchange="sortCars(this.value)">
+              <option value="popular">Сначала популярные</option>
+              <option value="price-asc">Дешевле</option>
+              <option value="price-desc">Дороже</option>
+              <option value="new">Новинки</option>
+            </select>
+          </div>
+        </div>
+        <div class="cars-grid" id="carsGrid"></div>
+        <div style="text-align:center;margin-top:32px" id="loadMoreWrap">
+          <button class="btn btn-outline" onclick="loadMore()">Показать ещё автомобили</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ADVANTAGES -->
+<div class="section advantages" id="conditions">
+  <div class="section-header">
+    <h2 class="section-title">Наши преимущества</h2>
+  </div>
+  <div class="advantages-grid">
+    <div class="adv-card">
+      <div class="adv-icon">🚫</div>
+      <div class="adv-title">Без залога</div>
+      <div class="adv-desc">Арендуйте без депозита и скрытых платежей</div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-icon">⚡</div>
+      <div class="adv-title">Быстрое бронирование</div>
+      <div class="adv-desc">Онлайн за 2 минуты без лишних звонков</div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-icon">🚁</div>
+      <div class="adv-title">Доставка и возврат</div>
+      <div class="adv-desc">В аэропорт, отель или удобное место</div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-icon">🛡</div>
+      <div class="adv-title">Страховка включена</div>
+      <div class="adv-desc">Полная страховка в каждой аренде</div>
+    </div>
+    <div class="adv-card">
+      <div class="adv-icon">🎧</div>
+      <div class="adv-title">Поддержка 24/7</div>
+      <div class="adv-desc">Мы всегда на связи и готовы помочь</div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="section" style="background:var(--bg2);max-width:100%;padding:60px 0">
+  <div style="max-width:1440px;margin:0 auto;padding:0 24px">
+    <div class="section-header">
+      <h2 class="section-title">Отзывы клиентов</h2>
+      <a href="#" class="section-link">Смотреть все отзывы →</a>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer">
+            <div class="reviewer-avatar">А</div>
+            <div><div class="reviewer-name">Азизбек</div><div class="reviewer-date">15 марта 2025</div></div>
+          </div>
+          <div class="stars">★★★★★</div>
+        </div>
+        <p class="review-text">Отличный сервис! Машина была чистая, вовремя подали в аэропорт. Рекомендую!</p>
+      </div>
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer">
+            <div class="reviewer-avatar" style="background:linear-gradient(135deg,#e91e63,#9c27b0)">М</div>
+            <div><div class="reviewer-name">Мадина</div><div class="reviewer-date">2 апреля 2025</div></div>
+          </div>
+          <div class="stars">★★★★★</div>
+        </div>
+        <p class="review-text">Бронировала Kia K5, всё прошло быстро и без проблем. Машина в идеальном состоянии.</p>
+      </div>
+      <div class="review-card">
+        <div class="review-header">
+          <div class="reviewer">
+            <div class="reviewer-avatar" style="background:linear-gradient(135deg,#ff9800,#f44336)">Д</div>
+            <div><div class="reviewer-name">Давлат</div><div class="reviewer-date">10 апреля 2025</div></div>
+          </div>
+          <div class="stars">★★★★★</div>
+        </div>
+        <p class="review-text">Лучшие цены в Ташкенте. Поддержка ответила сразу, помогли с выбором авто.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="contacts">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo"><span class="logo-icon">🚗</span> RENT<span>CAR</span></div>
+        <p class="footer-tagline">Аренда автомобилей в Ташкенте на лучших условиях</p>
+        <div class="footer-socials">
+          <a href="https://t.me/rentcaruzb" target="_blank" class="social-btn">✈</a>
+          <a href="https://instagram.com/rentcar_uz" target="_blank" class="social-btn">📸</a>
+          <a href="https://wa.me/998712000001" target="_blank" class="social-btn">💬</a>
+        </div>
+      </div>
+      <div class="footer-col" id="about">
+        <h4>Навигация</h4>
+        <a href="#">Главная</a>
+        <a href="#autopark">Автопарк</a>
+        <a href="#conditions">Условия аренды</a>
+        <a href="#about">О компании</a>
+        <a href="#contacts">Контакты</a>
+      </div>
+      <div class="footer-col">
+        <h4>Поддержка</h4>
+        <a href="tel:+998712000001">+998 71 200 00 01</a>
+        <a href="tel:+998901234567">+998 90 123 45 67</a>
+        <a href="mailto:info@rentcar.uz">info@rentcar.uz</a>
+        <div style="font-size:12px;color:var(--text2);margin-top:8px">Ежедневно 08:00 – 23:00</div>
+      </div>
+      <div class="footer-col">
+        <h4>Адрес</h4>
+        <div class="footer-contact">📍 Ташкент, ул. Афросиаб 12</div>
+        <a href="#" style="color:var(--blue);font-size:13px">Построить маршрут</a>
+      </div>
+      <div class="footer-col">
+        <h4>Подпишитесь на новости</h4>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Получайте акции и специальные предложения</p>
+        <div class="newsletter">
+          <input type="email" placeholder="Ваш email">
+          <button>→</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 RentCar. Все права защищены.</span>
+      <div class="footer-links">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL: LOGIN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <h2>Войти</h2>
+    <p class="modal-sub">Войдите в свой аккаунт</p>
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Как вас зовут</label>
+        <input type="text" class="form-control" id="loginName" placeholder="Ваше имя">
+      </div>
+      <div class="form-group">
+        <label>Номер телефона</label>
+        <div class="phone-wrap">
+          <span class="phone-prefix">+998</span>
+          <input type="tel" class="form-control phone-input-field" id="loginPhone" placeholder="90 123 45 67" maxlength="12">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" class="form-control" id="loginPass" placeholder="Введите пароль">
+      </div>
+      <div id="loginError" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="handleLogin()">Войти</button>
+    </div>
+    <div class="modal-footer" style="margin-top:16px">Нет аккаунта? <a href="#" onclick="switchModal('loginModal','regModal')">Зарегистрироваться</a></div>
+  </div>
+</div>
+
+<!-- MODAL: REGISTER -->
+<div class="modal-overlay" id="regModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('regModal')">✕</button>
+    <h2>Регистрация</h2>
+    <p class="modal-sub">Создайте аккаунт в RentCar</p>
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Как вас зовут</label>
+        <input type="text" class="form-control" id="regName" placeholder="Ваше имя">
+      </div>
+      <div class="form-group">
+        <label>Номер телефона</label>
+        <div class="phone-wrap">
+          <span class="phone-prefix">+998</span>
+          <input type="tel" class="form-control phone-input-field" id="regPhone" placeholder="90 123 45 67" maxlength="12">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Новый пароль</label>
+        <input type="password" class="form-control" id="regPass" placeholder="Придумайте пароль">
+      </div>
+      <div class="form-group">
+        <label>Ваша локация</label>
+        <input type="text" class="form-control" id="regLocation" placeholder="Например: Ташкент, Юнусабад">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="handleRegister()">Зарегистрироваться</button>
+    </div>
+    <div class="modal-footer" style="margin-top:16px">Уже есть аккаунт? <a href="#" onclick="switchModal('regModal','loginModal')">Войти</a></div>
+  </div>
+</div>
+
+<!-- MODAL: CAR DETAIL -->
+<div class="modal-overlay" id="carDetailModal">
+  <div class="modal car-detail-modal">
+    <button class="modal-close" onclick="closeModal('carDetailModal')">✕</button>
+    <div id="carDetailContent"></div>
+  </div>
+</div>
+
+<!-- MODAL: BOOKING -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('bookingModal')">✕</button>
+    <h2>Забронировать</h2>
+    <p class="modal-sub" id="bookingCarName">Оформление бронирования</p>
+    <div class="booking-steps"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
+    <div class="modal-form">
+      <div class="form-group">
+        <label>Ваше имя</label>
+        <input type="text" class="form-control" placeholder="Как вас зовут">
+      </div>
+      <div class="form-group">
+        <label>Номер телефона</label>
+        <div class="phone-wrap">
+          <span class="phone-prefix">+998</span>
+          <input type="tel" class="form-control phone-input-field" placeholder="90 123 45 67" maxlength="12">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Дата получения</label>
+        <input type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Дата возврата</label>
+        <input type="date" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Место получения</label>
+        <select class="form-control">
+          <option>Центр города</option>
+          <option>Международный аэропорт TAS</option>
+          <option>Другое место</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px" onclick="confirmBooking()">Подтвердить бронирование</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADMIN PANEL -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal admin-panel-modal">
+    <button class="modal-close" onclick="closeModal('adminModal')">✕</button>
+    <h2>👑 Админ панель</h2>
+    <p class="modal-sub">Управление автопарком RentCar</p>
+    <div class="admin-section">
+      <div class="admin-section-title">Статистика</div>
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="admin-stat-num" id="totalCarsCount">50</div><div class="admin-stat-label">Автомобилей</div></div>
+        <div class="admin-stat"><div class="admin-stat-num">38</div><div class="admin-stat-label">Доступно</div></div>
+        <div class="admin-stat"><div class="admin-stat-num">12</div><div class="admin-stat-label">В аренде</div></div>
+      </div>
+    </div>
+    <div class="admin-section" style="display:flex;flex-direction:column;gap:10px">
+      <div class="admin-section-title">Действия</div>
+      <button class="btn btn-primary" style="justify-content:center" onclick="closeModal('adminModal');openAddCarModal()">➕ Добавить новый автомобиль</button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="showToast('Фильтры обновлены','success')">⚙ Управление фильтрами</button>
+      <button class="btn btn-ghost" style="justify-content:center" onclick="showToast('Экспорт данных выполнен','success')">📊 Экспорт данных</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDIT CAR -->
+<div class="modal-overlay" id="editCarModal">
+  <div class="modal edit-car-modal">
+    <button class="modal-close" onclick="closeModal('editCarModal')">✕</button>
+    <h2>✏️ Редактировать авто</h2>
+    <p class="modal-sub" id="editCarTitle"></p>
+    <input type="hidden" id="editCarId">
+    <div class="modal-form">
+      <div class="form-group"><label>Название</label><input type="text" class="form-control" id="editName"></div>
+      <div class="form-group"><label>Цена / сутки (сум)</label><input type="number" class="form-control" id="editPrice"></div>
+      <div class="form-group"><label>Год</label><input type="number" class="form-control" id="editYear"></div>
+      <div class="form-group"><label>Тип кузова</label>
+        <select class="form-control" id="editType">
+          <option>Седан</option><option>Кроссовер</option><option>Внедорожник</option><option>Минивэн</option><option>Пикап</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Описание</label><textarea class="form-control" id="editDesc" rows="3" style="resize:vertical"></textarea></div>
+      <div class="form-group"><label>URL фото</label><input type="text" class="form-control" id="editImg" placeholder="https://..."></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="saveCarEdit()">💾 Сохранить изменения</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADD CAR -->
+<div class="modal-overlay" id="addCarModal">
+  <div class="modal edit-car-modal">
+    <button class="modal-close" onclick="closeModal('addCarModal')">✕</button>
+    <h2>➕ Добавить автомобиль</h2>
+    <div class="modal-form">
+      <div class="form-group"><label>Марка</label><input type="text" class="form-control" id="addBrand" placeholder="Kia"></div>
+      <div class="form-group"><label>Модель</label><input type="text" class="form-control" id="addModel" placeholder="K5"></div>
+      <div class="form-group"><label>Цена / сутки (сум)</label><input type="number" class="form-control" id="addPrice" placeholder="600000"></div>
+      <div class="form-group"><label>Год</label><input type="number" class="form-control" id="addYear" placeholder="2024"></div>
+      <div class="form-group"><label>Тип кузова</label>
+        <select class="form-control" id="addType">
+          <option>Седан</option><option>Кроссовер</option><option>Внедорожник</option><option>Минивэн</option><option>Пикап</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Коробка передач</label>
+        <select class="form-control" id="addGear">
+          <option>Автомат</option><option>Механика</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Мест</label><input type="number" class="form-control" id="addSeats" placeholder="5" value="5"></div>
+      <div class="form-group"><label>URL фото</label><input type="text" class="form-control" id="addImg" placeholder="https://..."></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px" onclick="addNewCar()">Добавить автомобиль</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== DATA ==========
+let carsData = [
+  {id:1,brand:'Chevrolet',model:'Cobalt',year:2023,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:400000,badge:'hit',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Надёжный седан бизнес-класса. Идеально для поездок по городу.'},
+  {id:2,brand:'Kia',model:'K5',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:850000,badge:'premium',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Элегантный седан с передовыми технологиями.'},
+  {id:3,brand:'Hyundai',model:'Tucson',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:650000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Популярный кроссовер с богатой комплектацией.'},
+  {id:4,brand:'Toyota',model:'Land Cruiser 300',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:2000000,badge:'vip',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Легенда бездорожья. Для тех, кто выбирает лучшее.'},
+  {id:5,brand:'BYD',model:'Song Plus',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Электро',price:750000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Электрический кроссовер будущего.'},
+  {id:6,brand:'Hyundai',model:'Staria',year:2023,type:'Минивэн',gear:'Автомат',seats:7,fuel:'Бензин',price:900000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Просторный минивэн для большой семьи или группы.'},
+  {id:7,brand:'BMW',model:'5 Series',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:1800000,badge:'premium',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Немецкая роскошь и спортивный характер.'},
+  {id:8,brand:'Kia',model:'Sportage',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:700000,badge:'new',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Современный кроссовер с ярким дизайном.'},
+  {id:9,brand:'Hyundai',model:'Santa Fe',year:2023,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:950000,badge:'',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Комфортный внедорожник для всей семьи.'},
+  {id:10,brand:'Chevrolet',model:'Equinox',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:600000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Американский кроссовер с отличной надёжностью.'},
+  {id:11,brand:'Toyota',model:'Camry',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:1100000,badge:'hit',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Классика бизнес-сегмента — Toyota Camry.'},
+  {id:12,brand:'Mercedes-Benz',model:'E-Class',year:2023,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:2200000,badge:'vip',img:'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80',desc:'Немецкое совершенство для особых случаев.'},
+  {id:13,brand:'Kia',model:'Carnival',year:2024,type:'Минивэн',gear:'Автомат',seats:8,fuel:'Бензин',price:1050000,badge:'',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Роскошный минивэн для путешествий.'},
+  {id:14,brand:'Chevrolet',model:'Captiva',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:550000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Просторный кроссовер для города и трассы.'},
+  {id:15,brand:'BYD',model:'Han EV',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Электро',price:950000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Флагманский электрический седан BYD.'},
+  {id:16,brand:'Lexus',model:'RX 350',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:1800000,badge:'premium',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Японская роскошь в классе кроссоверов.'},
+  {id:17,brand:'Toyota',model:'RAV4',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:800000,badge:'',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Надёжный кроссовер от мирового лидера.'},
+  {id:18,brand:'Hyundai',model:'Palisade',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:1100000,badge:'new',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Роскошный трёхрядный внедорожник.'},
+  {id:19,brand:'BMW',model:'X5',year:2024,type:'Внедорожник',gear:'Автомат',seats:5,fuel:'Бензин',price:2500000,badge:'vip',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Спортивный внедорожник BMW с характером.'},
+  {id:20,brand:'Chevrolet',model:'Malibu',year:2023,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:480000,badge:'',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Стильный американский седан.'},
+  {id:21,brand:'Kia',model:'EV6',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Электро',price:1100000,badge:'electric',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Революционный электрический кроссовер Kia.'},
+  {id:22,brand:'Mercedes-Benz',model:'GLE',year:2024,type:'Внедорожник',gear:'Автомат',seats:5,fuel:'Бензин',price:2800000,badge:'vip',img:'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80',desc:'Роскошный немецкий внедорожник высшего класса.'},
+  {id:23,brand:'Toyota',model:'Fortuner',year:2023,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Дизель',price:1200000,badge:'',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Рамный внедорожник для настоящего бездорожья.'},
+  {id:24,brand:'Hyundai',model:'Elantra',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:520000,badge:'new',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Молодёжный седан с динамичным дизайном.'},
+  {id:25,brand:'BYD',model:'Atto 3',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Электро',price:850000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Электрический кроссовер нового поколения.'},
+  {id:26,brand:'Chevrolet',model:'Spark',year:2023,type:'Седан',gear:'Механика',seats:4,fuel:'Бензин',price:300000,badge:'',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Экономичный городской автомобиль.'},
+  {id:27,brand:'Lexus',model:'LX 600',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:3500000,badge:'vip',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Флагманский внедорожник Lexus.'},
+  {id:28,brand:'Kia',model:'Sorento',year:2023,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:900000,badge:'',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Семейный внедорожник с отличным оснащением.'},
+  {id:29,brand:'BMW',model:'3 Series',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:1500000,badge:'premium',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Спортивный баварский седан.'},
+  {id:30,brand:'Hyundai',model:'Ioniq 6',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Электро',price:1000000,badge:'electric',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Аэродинамический электрический седан.'},
+  {id:31,brand:'Toyota',model:'Hilux',year:2023,type:'Пикап',gear:'Автомат',seats:5,fuel:'Дизель',price:1100000,badge:'',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Легендарный пикап для любых задач.'},
+  {id:32,brand:'Chevrolet',model:'Traverse',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:1300000,badge:'new',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Американский трёхрядный внедорожник.'},
+  {id:33,brand:'Mercedes-Benz',model:'GLC',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:2400000,badge:'premium',img:'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80',desc:'Элитный немецкий кроссовер.'},
+  {id:34,brand:'Kia',model:'Telluride',year:2024,type:'Внедорожник',gear:'Автомат',seats:8,fuel:'Бензин',price:1400000,badge:'',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Большой внедорожник с роскошным интерьером.'},
+  {id:35,brand:'BYD',model:'Seal',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Электро',price:1100000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Динамичный электрический седан BYD.'},
+  {id:36,brand:'Toyota',model:'Alphard',year:2024,type:'Минивэн',gear:'Автомат',seats:7,fuel:'Бензин',price:2500000,badge:'vip',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Роскошный минивэн — VIP транспорт.'},
+  {id:37,brand:'Hyundai',model:'Kona Electric',year:2024,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Электро',price:700000,badge:'electric',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Компактный электрический кроссовер.'},
+  {id:38,brand:'BMW',model:'X7',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:3000000,badge:'vip',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Флагман BMW SUV — максимум пространства и роскоши.'},
+  {id:39,brand:'Chevrolet',model:'Blazer',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:750000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Спортивный кроссовер с характерным дизайном.'},
+  {id:40,brand:'Lexus',model:'ES 350',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:1600000,badge:'premium',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Роскошный японский седан бизнес-класса.'},
+  {id:41,brand:'Kia',model:'Stinger',year:2023,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:1200000,badge:'premium',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Спортивный гран-туризмо от Kia.'},
+  {id:42,brand:'Toyota',model:'Sequoia',year:2024,type:'Внедорожник',gear:'Автомат',seats:8,fuel:'Гибрид',price:2800000,badge:'vip',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Огромный американский внедорожник Toyota.'},
+  {id:43,brand:'Mercedes-Benz',model:'S-Class',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:4000000,badge:'vip',img:'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80',desc:'Эталон роскоши — Mercedes-Benz S-Class.'},
+  {id:44,brand:'Hyundai',model:'Venue',year:2023,type:'Кроссовер',gear:'Автомат',seats:5,fuel:'Бензин',price:420000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Компактный городской кроссовер.'},
+  {id:45,brand:'BYD',model:'Tang EV',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Электро',price:1300000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Мощный электрический внедорожник.'},
+  {id:46,brand:'Lexus',model:'GX 460',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Бензин',price:2200000,badge:'premium',img:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=80',desc:'Рамный внедорожник с премиальным комфортом.'},
+  {id:47,brand:'Chevrolet',model:'Orlando',year:2023,type:'Минивэн',gear:'Механика',seats:7,fuel:'Бензин',price:380000,badge:'',img:'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=600&q=80',desc:'Практичный минивэн для большой семьи.'},
+  {id:48,brand:'Toyota',model:'Sienna',year:2024,type:'Минивэн',gear:'Автомат',seats:8,fuel:'Гибрид',price:1400000,badge:'',img:'https://images.unsplash.com/photo-1617814076668-8dfc6fe3b744?w=600&q=80',desc:'Гибридный минивэн — экономия и комфорт.'},
+  {id:49,brand:'BMW',model:'7 Series',year:2024,type:'Седан',gear:'Автомат',seats:5,fuel:'Бензин',price:3500000,badge:'vip',img:'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80',desc:'Роскошный флагманский седан BMW.'},
+  {id:50,brand:'Kia',model:'EV9',year:2024,type:'Внедорожник',gear:'Автомат',seats:7,fuel:'Электро',price:1600000,badge:'electric',img:'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=600&q=80',desc:'Флагманский электрический внедорожник Kia.'},
+];
+
+let filteredCars = [...carsData];
+let displayedCount = 12;
+let isAdmin = false;
+
+// ========== THEME ==========
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeToggle.textContent = isDark ? '🌙' : '☀️';
+});
+
+// ========== MODALS ==========
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchModal(from, to) {
+  closeModal(from);
+  setTimeout(() => openModal(to), 200);
+}
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+  }
+});
+
+// ========== AUTH ==========
+function handleLogin() {
+  const name = document.getElementById('loginName').value.trim();
+  const phone = document.getElementById('loginPhone').value.trim().replace(/\s/g,'');
+  const pass = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginError');
+  if (!name || !phone || !pass) { err.textContent = 'Заполните все поля'; return; }
+  const fullPhone = '998' + phone.replace(/\D/g,'');
+  // Admin check
+  if (name === 'Daler' && (fullPhone === '998887974940' || phone.replace(/\D/g,'') === '887974940') && pass === '123456709') {
+    isAdmin = true;
+    document.body.classList.add('is-admin');
+    document.getElementById('adminPanelBtn').style.display = 'flex';
+    closeModal('loginModal');
+    showToast('Добро пожаловать, Admin! 👑', 'success');
+    renderCars();
+    return;
+  }
+  err.textContent = '';
+  closeModal('loginModal');
+  showToast('Вы вошли в систему', 'success');
+}
+
+function handleRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const pass = document.getElementById('regPass').value.trim();
+  const loc = document.getElementById('regLocation').value.trim();
+  if (!name || !phone || !pass || !loc) { showToast('Заполните все поля', 'error'); return; }
+  closeModal('regModal');
+  showToast('Регистрация прошла успешно! ✅', 'success');
+}
+
+// ========== CARS ==========
+function formatPrice(p) {
+  return new Intl.NumberFormat('ru-RU').format(p) + ' сум';
+}
+function getBadgeHtml(badge) {
+  if (!badge) return '';
+  const map = {hit:'badge-hit',premium:'badge-premium',vip:'badge-vip',electric:'badge-electric',new:'badge-new'};
+  const labels = {hit:'Хит',premium:'Премиум',vip:'VIP',electric:'Электро',new:'Новинка'};
+  return `<div class="car-badge ${map[badge]}">${labels[badge]}</div>`;
+}
+function renderCars() {
+  const grid = document.getElementById('carsGrid');
+  const shown = filteredCars.slice(0, displayedCount);
+  document.getElementById('carsCount').textContent = filteredCars.length;
+  grid.innerHTML = shown.map(car => `
+    <div class="car-card" id="car-${car.id}">
+      ${getBadgeHtml(car.badge)}
+      <div class="car-img-wrap">
+        <img src="${car.img}" alt="${car.brand} ${car.model}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="car-img-placeholder" style="display:none">🚗</div>
+      </div>
+      <div class="car-body">
+        <div class="car-name">${car.brand} ${car.model}</div>
+        <div class="car-meta">
+          <span>${car.year}</span>
+          <span>${car.gear}</span>
+          <span>${car.seats} мест</span>
+        </div>
+        <div class="car-specs">
+          <div class="car-spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M2 12c0-5.523 4.477-10 10-10s10 4.477 10 10M2 12c0 5.523 4.477 10 10 10s10-4.477 10-10"/></svg> А/С</div>
+          <div class="car-spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> ${car.fuel}</div>
+          <div class="car-spec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 300 км/день</div>
+        </div>
+        <div class="car-price">${formatPrice(car.price)} <span>/ сутки</span></div>
+        <div class="car-actions">
+          <button class="btn btn-ghost" onclick="openCarDetail(${car.id})">Подробнее</button>
+          <button class="btn btn-primary" onclick="openBooking(${car.id})">Забронировать</button>
+        </div>
+        ${isAdmin ? `
+        <div class="car-actions-admin" style="display:flex">
+          <button class="admin-action" onclick="openEditCar(${car.id})">✏️ Изменить</button>
+          <button class="admin-action del" onclick="deleteCar(${car.id})">🗑 Удалить</button>
+        </div>` : ''}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('loadMoreWrap').style.display = filteredCars.length > displayedCount ? 'block' : 'none';
+  document.getElementById('totalCarsCount').textContent = carsData.length;
+}
+
+function loadMore() {
+  displayedCount += 12;
+  renderCars();
+}
+
+function openCarDetail(id) {
+  const car = carsData.find(c => c.id === id);
+  if (!car) return;
+  document.getElementById('carDetailContent').innerHTML = `
+    <h2 style="margin-bottom:4px">${car.brand} ${car.model}</h2>
+    <div style="color:var(--text2);font-size:13px;margin-bottom:16px">${car.year} · ${car.type} · ${car.gear}</div>
+    <img src="${car.img}" alt="${car.brand} ${car.model}" class="car-detail-img" onerror="this.src='';this.style.background='var(--bg3)'">
+    <div class="car-detail-specs">
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">🪑</div><div class="car-detail-spec-label">Мест</div><div class="car-detail-spec-val">${car.seats}</div></div>
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">⚡</div><div class="car-detail-spec-label">Топливо</div><div class="car-detail-spec-val">${car.fuel}</div></div>
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">⚙️</div><div class="car-detail-spec-label">КПП</div><div class="car-detail-spec-val">${car.gear}</div></div>
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">📅</div><div class="car-detail-spec-label">Год</div><div class="car-detail-spec-val">${car.year}</div></div>
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">🚗</div><div class="car-detail-spec-label">Кузов</div><div class="car-detail-spec-val">${car.type}</div></div>
+      <div class="car-detail-spec"><div class="car-detail-spec-icon">📏</div><div class="car-detail-spec-label">Лимит</div><div class="car-detail-spec-val">300 км</div></div>
+    </div>
+    <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:16px">${car.desc}</p>
+    <div class="car-detail-price">${formatPrice(car.price)} <span>/ сутки</span></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="closeModal('carDetailModal')">Закрыть</button>
+      <button class="btn btn-primary" style="flex:2;justify-content:center" onclick="closeModal('carDetailModal');openBooking(${car.id})">Забронировать</button>
+    </div>
+  `;
+  openModal('carDetailModal');
+}
+
+function openBooking(id) {
+  const car = carsData.find(c => c.id === id);
+  if (car) document.getElementById('bookingCarName').textContent = `${car.brand} ${car.model} — ${formatPrice(car.price)}/сут`;
+  openModal('bookingModal');
+}
+
+function confirmBooking() {
+  closeModal('bookingModal');
+  showToast('Бронирование подтверждено! ✅ Мы свяжемся с вами.', 'success');
+}
+
+// ========== FILTERS ==========
+function applyFilters() {
+  const maxPrice = parseInt(document.getElementById('priceFilter').value);
+  const priceVal = document.getElementById('priceFilterVal');
+  priceVal.textContent = new Intl.NumberFormat('ru-RU').format(maxPrice) + ' сум';
+  const checkedBrands = [...document.querySelectorAll('.filter-group input[type=checkbox]:checked')].filter(cb => ['Chevrolet','Kia','Hyundai','BYD','BMW','Toyota','Mercedes-Benz','Lexus'].includes(cb.value)).map(cb => cb.value);
+  const checkedTypes = [...document.querySelectorAll('.filter-group input[type=checkbox]:checked')].filter(cb => ['Седан','Кроссовер','Внедорожник','Минивэн','Пикап'].includes(cb.value)).map(cb => cb.value);
+  const checkedGears = [...document.querySelectorAll('.filter-group input[type=checkbox]:checked')].filter(cb => ['Автомат','Механика'].includes(cb.value)).map(cb => cb.value);
+  filteredCars = carsData.filter(car => {
+    if (car.price > maxPrice) return false;
+    if (checkedBrands.length && !checkedBrands.includes(car.brand)) return false;
+    if (checkedTypes.length && !checkedTypes.includes(car.type)) return false;
+    if (checkedGears.length && !checkedGears.includes(car.gear)) return false;
+    return true;
+  });
+  displayedCount = 12;
+  renderCars();
+}
+
+function resetFilters() {
+  document.querySelectorAll('.filter-group input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('priceFilter').value = 5000000;
+  document.getElementById('priceFilterVal').textContent = '5 000 000 сум';
+  filteredCars = [...carsData];
+  displayedCount = 12;
+  renderCars();
+}
+
+function filterByType(type) {
+  document.getElementById('autopark').scrollIntoView({behavior:'smooth'});
+  setTimeout(() => {
+    filteredCars = carsData.filter(c => c.type === type);
+    displayedCount = 12;
+    renderCars();
+  }, 500);
+}
+
+function sortCars(val) {
+  if (val === 'price-asc') filteredCars.sort((a,b) => a.price - b.price);
+  else if (val === 'price-desc') filteredCars.sort((a,b) => b.price - a.price);
+  else if (val === 'new') filteredCars.sort((a,b) => b.year - a.year);
+  else filteredCars = [...carsData].filter(car => filteredCars.some(f => f.id === car.id));
+  renderCars();
+}
+
+function applySearch() {
+  const brand = document.getElementById('searchBrand').value;
+  const type = document.getElementById('searchType').value;
+  const gear = document.getElementById('searchGear').value;
+  const from = parseInt(document.getElementById('priceFrom').value) || 0;
+  const to = parseInt(document.getElementById('priceTo').value) || 999999999;
+  filteredCars = carsData.filter(car => {
+    if (brand && car.brand !== brand) return false;
+    if (type && car.type !== type) return false;
+    if (gear && car.gear !== gear) return false;
+    if (car.price < from || car.price > to) return false;
+    return true;
+  });
+  displayedCount = 12;
+  document.getElementById('autopark').scrollIntoView({behavior:'smooth'});
+  setTimeout(renderCars, 500);
+}
+
+function resetSearch() {
+  document.getElementById('searchBrand').value = '';
+  document.getElementById('searchType').value = '';
+  document.getElementById('searchGear').value = '';
+  document.getElementById('priceFrom').value = '300000';
+  document.getElementById('priceTo').value = '';
+  filteredCars = [...carsData];
+  displayedCount = 12;
+  renderCars();
+}
+
+// ========== ADMIN ==========
+function openEditCar(id) {
+  const car = carsData.find(c => c.id === id);
+  if (!car) return;
+  document.getElementById('editCarId').value = id;
+  document.getElementById('editCarTitle').textContent = `${car.brand} ${car.model}`;
+  document.getElementById('editName').value = `${car.brand} ${car.model}`;
+  document.getElementById('editPrice').value = car.price;
+  document.getElementById('editYear').value = car.year;
+  document.getElementById('editType').value = car.type;
+  document.getElementById('editDesc').value = car.desc;
+  document.getElementById('editImg').value = car.img;
+  openModal('editCarModal');
+}
+
+function saveCarEdit() {
+  const id = parseInt(document.getElementById('editCarId').value);
+  const car = carsData.find(c => c.id === id);
+  if (!car) return;
+  const nameParts = document.getElementById('editName').value.split(' ');
+  car.brand = nameParts[0];
+  car.model = nameParts.slice(1).join(' ');
+  car.price = parseInt(document.getElementById('editPrice').value) || car.price;
+  car.year = parseInt(document.getElementById('editYear').value) || car.year;
+  car.type = document.getElementById('editType').value;
+  car.desc = document.getElementById('editDesc').value;
+  car.img = document.getElementById('editImg').value || car.img;
+  closeModal('editCarModal');
+  renderCars();
+  showToast('Автомобиль обновлён ✅', 'success');
+}
+
+function deleteCar(id) {
+  if (!confirm('Удалить этот автомобиль?')) return;
+  carsData = carsData.filter(c => c.id !== id);
+  filteredCars = filteredCars.filter(c => c.id !== id);
+  renderCars();
+  showToast('Автомобиль удалён', 'error');
+}
+
+function openAddCarModal() {
+  openModal('addCarModal');
+}
+
+function addNewCar() {
+  const brand = document.getElementById('addBrand').value.trim();
+  const model = document.getElementById('addModel').value.trim();
+  const price = parseInt(document.getElementById('addPrice').value) || 500000;
+  const year = parseInt(document.getElementById('addYear').value) || 2024;
+  const type = document.getElementById('addType').value;
+  const gear = document.getElementById('addGear').value;
+  const seats = parseInt(document.getElementById('addSeats').value) || 5;
+  const img = document.getElementById('addImg').value || 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80';
+  if (!brand || !model) { showToast('Укажите марку и модель', 'error'); return; }
+  const newCar = {id: Date.now(), brand, model, year, type, gear, seats, fuel:'Бензин', price, badge:'new', img, desc:`${brand} ${model} — отличный выбор для аренды.`};
+  carsData.unshift(newCar);
+  filteredCars = [...carsData];
+  displayedCount = 12;
+  closeModal('addCarModal');
+  renderCars();
+  showToast(`${brand} ${model} добавлен ✅`, 'success');
+}
+
+// ========== MOBILE MENU ==========
+function toggleMobileMenu() {
+  document.getElementById('mobileNav').classList.toggle('open');
+}
+
+// ========== TOAST ==========
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { t.classList.remove('show'); }, 3500);
+}
+
+// ========== INIT ==========
+document.getElementById('dateFrom').valueAsDate = new Date();
+renderCars();
+
+// Smooth scroll nav
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>
