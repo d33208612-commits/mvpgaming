@@ -275,7 +275,7 @@
       '<div class="card club-card mb12" data-go="club"' + attr({ id: c.id }) + '>' +
       '<div class="cc-media">' + pic(c.gallery[0], { seed: 'club-' + c.id }) +
       '<span class="status-pill ' + (c.online ? 'on' : 'off') + '"><span class="dot"></span>' + (c.online ? t('online') : t('offline')) + '</span>' +
-      '<button class="fav-btn ' + (fav ? 'on' : '') + '" data-action="favToggle" data-id="' + c.id + '" onclick="event.stopPropagation()">' + icon(fav ? 'heartFill' : 'heart', { size: 20 }) + '</button>' +
+      '<button class="fav-btn ' + (fav ? 'on' : '') + '" data-action="favToggle" data-id="' + c.id + '">' + icon(fav ? 'heartFill' : 'heart', { size: 20 }) + '</button>' +
       '</div>' +
       '<div class="cc-body"><div class="cc-title-row"><h3>' + esc(c.name) + '</h3>' +
       '<span class="rating">' + icon('starFill', { size: 14 }) + c.rating.toFixed(1) + '</span></div>' +
@@ -289,7 +289,7 @@
     return (
       '<div class="card club-card" style="width:250px;flex:none" data-go="club"' + attr({ id: c.id }) + '>' +
       '<div class="cc-media">' + pic(c.gallery[0], { seed: 'club-' + c.id }) +
-      '<button class="fav-btn ' + (fav ? 'on' : '') + '" data-action="favToggle" data-id="' + c.id + '" onclick="event.stopPropagation()">' + icon(fav ? 'heartFill' : 'heart', { size: 18 }) + '</button>' +
+      '<button class="fav-btn ' + (fav ? 'on' : '') + '" data-action="favToggle" data-id="' + c.id + '">' + icon(fav ? 'heartFill' : 'heart', { size: 18 }) + '</button>' +
       '<span class="status-pill ' + (c.online ? 'on' : 'off') + '"><span class="dot"></span>' + (c.online ? t('open') : t('closed')) + '</span></div>' +
       '<div class="cc-body"><div class="cc-title-row"><h3 style="font-size:14.5px">' + esc(c.name) + '</h3>' +
       '<span class="rating">' + icon('starFill', { size: 13 }) + c.rating.toFixed(1) + '</span></div>' +
@@ -600,8 +600,8 @@
       '<div class="pn">' + esc(u.name) + '</div>' +
       '<div class="level-badge" style="color:var(--red);border-color:rgba(229,51,58,.35);background:rgba(229,51,58,.12)">' + icon('gear', { size: 14 }) + ' ' + t('clubreg_role_admin') + (club ? ' · ' + esc(club.name) : '') + '</div></div>' +
       '<div class="pad mt16"><div class="menu">' +
-      menuRow('gear', t('pm_admin_panel'), club ? club.name : '', { tab: 'admin' }, true) +
-      menuRowAction('eye', t('adm_view_public'), 'viewPublic') +
+      '<div class="menu-row" data-action="backToPanel"><div class="mr-ico red">' + icon('gear', { size: 20 }) + '</div><div class="mr-body"><div class="mr-title">' + t('pm_admin_panel') + '</div>' + (club ? '<div class="mr-sub">' + esc(club.name) + '</div>' : '') + '</div>' + icon('chevR', { size: 18, cls: 'chev' }) + '</div>' +
+      (S.state.adminViewPublic ? '' : menuRowAction('eye', t('adm_view_public'), 'viewPublic')) +
       menuRow('chat', t('pm_support'), null, { go: 'support' }) +
       menuRow('settings', t('pm_settings'), null, { go: 'settings' }) +
       '</div><div class="menu mt16">' + menuRowAction('logout', t('auth_logout'), 'logout') + '</div></div></div>'
@@ -854,6 +854,7 @@
   };
   A.logout = () => { S.logout(); selectTab('profile'); MVP.app.ui.authMode = 'login'; render(); };
   A.viewPublic = () => { S.setAdminViewPublic(true); toast(t('adm_view_public'), ''); selectTab('home'); };
+  A.backToPanel = () => { S.setAdminViewPublic(false); selectTab('admin'); };
   A.demoAdmin = () => { S.login('+998 90 123 45 67', 'admin'); toast(t('auth_welcome'), 'success'); selectTab('admin'); };
 
   // club registration
