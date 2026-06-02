@@ -1,0 +1,25 @@
+{
+  "name": "MVP Gaming",
+  "short_name": "MVP Gaming",
+  "description": "Бронирование компьютерных и консольных клубов",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0b0f",
+  "theme_color": "#0a0b0f",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='42' fill='%230a0b0f'/><path d='M40 150 64 50l32 60 32-60 24 100h-26l-10-52-20 36-20-36-10 52H40Z' fill='%23e5333a'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%230a0b0f'/><path d='M108 400 170 132l86 160 86-160 62 268h-70l-26-140-52 96-52-96-26 140h-70Z' fill='%23e5333a'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

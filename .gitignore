@@ -1,0 +1,18 @@
+# dependencies
+node_modules/
+
+# secrets / local config — NEVER commit real tokens
+.env
+server/.env
+*.local
+
+# logs
+*.log
+npm-debug.log*
+
+# os / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,15 @@
+{
+  "name": "mvp-gaming-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MVP Gaming — Telegram verification backend (zero dependencies)",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
