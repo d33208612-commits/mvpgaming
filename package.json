@@ -1,0 +1,18 @@
+{
+  "name": "kartix-ai",
+  "version": "1.0.0",
+  "description": "Kartix AI — AI infographic generator for Uzum, Wildberries and Ozon marketplaces. Static frontend; no build step.",
+  "private": true,
+  "scripts": {
+    "test": "node test/harness.mjs",
+    "shots": "node test/shoot.mjs",
+    "serve": "python3 -m http.server 8000"
+  },
+  "keywords": ["ai", "marketplace", "infographic", "uzum", "wildberries", "ozon", "saas"],
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "playwright-core": "^1.60.0"
+  },
+  "comment": "html2canvas and jsPDF are vendored in js/vendor/ for offline export; install them via npm only when re-vendoring."
+}

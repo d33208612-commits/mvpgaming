@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kartix AI — AI-инфографика для маркетплейсов Uzum, Wildberries, Ozon</title>
+<meta name="description" content="Kartix AI превращает обычное фото товара в профессиональную продающую карточку для Uzum, Wildberries и Ozon. AI пишет тексты и собирает инфографику за 30 секунд.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%236d5cff'/%3E%3Cpath d='M30 28h12v18l16-18h15L66 50l16 22H66L50 52v20H30z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<!-- Export libraries, vendored locally so export works offline / on file:// -->
+<script defer src="js/vendor/html2canvas.min.js"></script>
+<script defer src="js/vendor/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ============================ HEADER ============================ -->
+<header class="header" id="header">
+  <div class="header-inner">
+    <a class="logo" data-nav="home" href="#">
+      <span class="logo-mark">K</span>
+      <span class="logo-text">Kartix<i>AI</i></span>
+    </a>
+
+    <nav class="nav" id="nav">
+      <a data-scroll="features" data-i18n="nav.features">Возможности</a>
+      <a data-scroll="how" data-i18n="nav.how">Как это работает</a>
+      <a data-scroll="templates" data-i18n="nav.templates">Шаблоны</a>
+      <a data-scroll="pricing" data-i18n="nav.pricing">Тарифы</a>
+    </nav>
+
+    <div class="header-right">
+      <!-- Language switcher -->
+      <div class="lang-switch" id="langSwitch">
+        <button class="lang-btn" id="langBtn" aria-haspopup="true" aria-expanded="false">
+          <span class="lang-flag" id="langFlag">🇷🇺</span>
+          <span class="lang-code" id="langCode">RU</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="lang-menu" id="langMenu" role="menu">
+          <button data-lang="ru" role="menuitem"><span>🇷🇺</span> Русский</button>
+          <button data-lang="uz" role="menuitem"><span>🇺🇿</span> O‘zbekcha</button>
+          <button data-lang="en" role="menuitem"><span>🇬🇧</span> English</button>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeToggle" data-i18n-aria="common.close" aria-label="Theme">
+        <span class="theme-icon-dark">🌙</span>
+        <span class="theme-icon-light">☀️</span>
+      </button>
+
+      <button class="btn btn-ghost btn-auth" id="loginBtn" data-i18n="cta.login">Войти</button>
+      <button class="btn btn-primary" data-nav="studio" data-i18n="cta.start">Начать бесплатно</button>
+
+      <!-- Logged-in avatar (hidden until auth) -->
+      <button class="avatar-btn" id="avatarBtn" data-nav="dashboard" hidden><span id="avatarInitials">U</span></button>
+
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============================ HOME VIEW ============================ -->
+<main id="view-home" class="view active">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <span class="blob blob-1"></span>
+      <span class="blob blob-2"></span>
+      <span class="blob blob-3"></span>
+      <span class="grain"></span>
+    </div>
+    <div class="hero-inner">
+      <div class="hero-left reveal">
+        <div class="hero-badge"><span class="pulse-dot"></span><span data-i18n="hero.badge">AI-дизайнер карточек нового поколения</span></div>
+        <h1 class="hero-title" id="heroTitle"></h1>
+        <p class="hero-subtitle" data-i18n="hero.subtitle"></p>
+
+        <!-- Drag & drop uploader -->
+        <div class="hero-drop" id="heroDrop">
+          <input type="file" id="heroFile" accept="image/*" hidden>
+          <div class="hero-drop-inner">
+            <div class="hero-drop-icon">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="hero-drop-text">
+              <strong data-i18n="hero.drop_title">Перетащите фото товара сюда</strong>
+              <span data-i18n="hero.drop_sub">или нажмите, чтобы выбрать файл</span>
+            </div>
+            <button class="btn btn-primary" id="heroDropBtn" data-i18n="hero.drop_btn">Выбрать фото</button>
+          </div>
+        </div>
+
+        <div class="hero-trust">
+          <span><svg class="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span data-i18n="hero.trust1"></span></span>
+          <span><svg class="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span data-i18n="hero.trust2"></span></span>
+          <span><svg class="ic-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span data-i18n="hero.trust3"></span></span>
+        </div>
+      </div>
+
+      <!-- Hero showcase card -->
+      <div class="hero-right reveal">
+        <div class="showcase" id="showcase">
+          <div class="showcase-card showcase-card-3"></div>
+          <div class="showcase-card showcase-card-2"></div>
+          <div class="showcase-card showcase-card-1">
+            <div class="sc-badge">ХИТ ПРОДАЖ</div>
+            <div class="sc-discount">-40%</div>
+            <div class="sc-emoji">🎧</div>
+            <div class="sc-glow"></div>
+            <div class="sc-info">
+              <div class="sc-title">Premium наушники</div>
+              <div class="sc-feats">
+                <span>🔋 40 часов</span><span>🎧 ANC</span><span>⚡ Fast</span>
+              </div>
+              <div class="sc-price"><b>349 000</b><s>590 000</s></div>
+            </div>
+            <div class="sc-stars">★★★★★ <i>4.9 · 2 105</i></div>
+          </div>
+          <div class="showcase-float sf-1">✨ AI фон</div>
+          <div class="showcase-float sf-2">📝 AI текст</div>
+          <div class="showcase-float sf-3">🎨 AI палитра</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="hero-stats reveal">
+      <div class="hstat"><b data-count="128000">0</b><span data-i18n="hero.stat1"></span></div>
+      <div class="hstat"><b>+37%</b><span data-i18n="hero.stat2"></span></div>
+      <div class="hstat"><b>−90%</b><span data-i18n="hero.stat3"></span></div>
+    </div>
+  </section>
+
+  <!-- TRUSTED -->
+  <section class="trusted">
+    <p class="trusted-title" data-i18n="trusted.title"></p>
+    <div class="trusted-logos">
+      <span class="tl tl-uzum">Uzum&nbsp;Market</span>
+      <span class="tl tl-wb">Wildberries</span>
+      <span class="tl tl-ozon">ozon</span>
+      <span class="tl tl-uzum">Uzum&nbsp;Market</span>
+      <span class="tl tl-wb">Wildberries</span>
+      <span class="tl tl-ozon">ozon</span>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker" data-i18n="nav.how"></span>
+        <h2 data-i18n="how.title"></h2>
+        <p data-i18n="how.subtitle"></p>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><div class="step-num">01</div><div class="step-ic">📤</div><h3 data-i18n="how.step1.t"></h3><p data-i18n="how.step1.d"></p></div>
+        <div class="step reveal"><div class="step-num">02</div><div class="step-ic">🧠</div><h3 data-i18n="how.step2.t"></h3><p data-i18n="how.step2.d"></p></div>
+        <div class="step reveal"><div class="step-num">03</div><div class="step-ic">🎨</div><h3 data-i18n="how.step3.t"></h3><p data-i18n="how.step3.d"></p></div>
+        <div class="step reveal"><div class="step-num">04</div><div class="step-ic">⬇️</div><h3 data-i18n="how.step4.t"></h3><p data-i18n="how.step4.d"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section section-alt" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker" data-i18n="nav.features"></span>
+        <h2 data-i18n="features.title"></h2>
+        <p data-i18n="features.subtitle"></p>
+      </div>
+      <div class="features-grid">
+        <div class="feature glass reveal"><div class="feature-ic">🔍</div><h3 data-i18n="feature.analyze.t"></h3><p data-i18n="feature.analyze.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">✍️</div><h3 data-i18n="feature.copy.t"></h3><p data-i18n="feature.copy.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">🖼️</div><h3 data-i18n="feature.slides.t"></h3><p data-i18n="feature.slides.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">🌐</div><h3 data-i18n="feature.multilang.t"></h3><p data-i18n="feature.multilang.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">🎚️</div><h3 data-i18n="feature.editor.t"></h3><p data-i18n="feature.editor.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">🛍️</div><h3 data-i18n="feature.templates.t"></h3><p data-i18n="feature.templates.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">🎨</div><h3 data-i18n="feature.brand.t"></h3><p data-i18n="feature.brand.d"></p></div>
+        <div class="feature glass reveal"><div class="feature-ic">⚡</div><h3 data-i18n="feature.export.t"></h3><p data-i18n="feature.export.d"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATES -->
+  <section class="section" id="templates">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker" data-i18n="nav.templates"></span>
+        <h2 data-i18n="templates.title"></h2>
+        <p data-i18n="templates.subtitle"></p>
+      </div>
+      <div class="tmpl-grid" id="tmplGrid"><!-- generated --></div>
+    </div>
+  </section>
+
+  <!-- DEMO before/after -->
+  <section class="section section-alt" id="demo">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">AI</span>
+        <h2 data-i18n="demo.title"></h2>
+        <p data-i18n="demo.subtitle"></p>
+      </div>
+      <div class="demo-wrap reveal">
+        <div class="demo-side demo-before">
+          <span class="demo-tag" data-i18n="demo.before"></span>
+          <div class="demo-photo">🎧</div>
+        </div>
+        <div class="demo-arrow">
+          <div class="demo-arrow-badge">AI</div>
+          <svg viewBox="0 0 24 24" width="28" height="28"><path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+        </div>
+        <div class="demo-side demo-after">
+          <span class="demo-tag demo-tag-accent" data-i18n="demo.after"></span>
+          <div class="demo-card">
+            <div class="dc-badge">ХИТ</div>
+            <div class="dc-disc">-40%</div>
+            <div class="dc-emoji">🎧</div>
+            <div class="dc-title">Premium ANC наушники</div>
+            <div class="dc-feats"><span>40ч</span><span>ANC</span><span>Hi-Fi</span></div>
+            <div class="dc-price">349 000 сум</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker" data-i18n="nav.pricing"></span>
+        <h2 data-i18n="pricing.title"></h2>
+        <p data-i18n="pricing.subtitle"></p>
+      </div>
+      <div class="billing-toggle reveal">
+        <span data-i18n="pricing.monthly" class="bt-m active" id="btMonthly"></span>
+        <button class="switch" id="billingSwitch" aria-label="billing"><span class="knob"></span></button>
+        <span data-i18n="pricing.yearly" class="bt-y" id="btYearly"></span>
+      </div>
+      <div class="pricing-grid" id="pricingGrid"><!-- generated --></div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section section-alt" id="faq">
+    <div class="container container-narrow">
+      <div class="section-head reveal"><h2 data-i18n="faq.title"></h2></div>
+      <div class="faq" id="faqList">
+        <details class="faq-item reveal"><summary data-i18n="faq.q1"></summary><p data-i18n="faq.a1"></p></details>
+        <details class="faq-item reveal"><summary data-i18n="faq.q2"></summary><p data-i18n="faq.a2"></p></details>
+        <details class="faq-item reveal"><summary data-i18n="faq.q3"></summary><p data-i18n="faq.a3"></p></details>
+        <details class="faq-item reveal"><summary data-i18n="faq.q4"></summary><p data-i18n="faq.a4"></p></details>
+        <details class="faq-item reveal"><summary data-i18n="faq.q5"></summary><p data-i18n="faq.a5"></p></details>
+        <details class="faq-item reveal"><summary data-i18n="faq.q6"></summary><p data-i18n="faq.a6"></p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner">
+    <div class="container">
+      <div class="cta-card glass reveal">
+        <div class="cta-glow"></div>
+        <h2 data-i18n="cta.banner.title"></h2>
+        <p data-i18n="cta.banner.sub"></p>
+        <button class="btn btn-primary btn-lg" data-nav="studio" data-i18n="cta.banner.btn"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a class="logo" data-nav="home" href="#"><span class="logo-mark">K</span><span class="logo-text">Kartix<i>AI</i></span></a>
+        <p data-i18n="footer.tagline"></p>
+        <div class="footer-mk">
+          <span class="tl tl-uzum">Uzum</span><span class="tl tl-wb">Wildberries</span><span class="tl tl-ozon">ozon</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.product"></h4>
+        <a data-scroll="features" data-i18n="nav.features"></a>
+        <a data-scroll="templates" data-i18n="nav.templates"></a>
+        <a data-scroll="pricing" data-i18n="nav.pricing"></a>
+        <a data-nav="studio" data-i18n="nav.studio"></a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.company"></h4>
+        <a href="#" data-i18n="footer.tagline"></a>
+        <a data-scroll="how" data-i18n="nav.how"></a>
+        <a data-scroll="faq" data-i18n="faq.title"></a>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.resources"></h4>
+        <a href="#" data-i18n="feature.copy.t"></a>
+        <a href="#" data-i18n="feature.templates.t"></a>
+        <a href="#" data-i18n="dashboard.tab.account"></a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year"></span> Kartix AI. <span data-i18n="footer.rights"></span></span>
+      <span class="footer-made" data-i18n="footer.made"></span>
+    </div>
+  </footer>
+</main>
+
+<!-- ============================ STUDIO VIEW ============================ -->
+<section id="view-studio" class="view studio">
+  <div class="container">
+    <!-- Stepper -->
+    <div class="studio-top">
+      <div class="studio-head">
+        <h1 data-i18n="studio.title"></h1>
+        <p data-i18n="studio.subtitle"></p>
+      </div>
+      <div class="studio-meta">
+        <div class="credits-pill" id="creditsPill"><span class="cp-icon">⚡</span><span data-i18n="studio.credits"></span>: <b id="creditsLeft">10</b></div>
+      </div>
+    </div>
+
+    <div class="stepper" id="stepper">
+      <div class="stp" data-step="1"><span class="stp-n">1</span><span class="stp-l" data-i18n="studio.step1"></span></div>
+      <div class="stp-line"></div>
+      <div class="stp" data-step="2"><span class="stp-n">2</span><span class="stp-l" data-i18n="studio.step2"></span></div>
+      <div class="stp-line"></div>
+      <div class="stp" data-step="3"><span class="stp-n">3</span><span class="stp-l" data-i18n="studio.step3"></span></div>
+    </div>
+
+    <!-- STEP 1: UPLOAD -->
+    <div class="studio-panel" id="panelUpload">
+      <div class="upload-zone glass" id="uploadZone">
+        <input type="file" id="studioFile" accept="image/*" hidden>
+        <div class="upload-icon">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7 9m5-5l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v1a2 2 0 002 2h12a2 2 0 002-2v-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </div>
+        <h3 data-i18n="studio.upload.title"></h3>
+        <p data-i18n="studio.upload.sub"></p>
+        <button class="btn btn-primary btn-lg" id="studioPick" data-i18n="studio.upload.btn"></button>
+      </div>
+      <div class="samples">
+        <p class="samples-title" data-i18n="studio.upload.samples"></p>
+        <div class="samples-row" id="samplesRow"><!-- generated --></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: ANALYSIS + CONTROLS -->
+    <div class="studio-panel" id="panelAnalyze" hidden>
+      <div class="analyze-grid">
+        <!-- Left: image + detection -->
+        <div class="analyze-left">
+          <div class="prod-preview glass">
+            <img id="prodImg" alt="product">
+            <button class="prod-change" id="prodChange" data-i18n="studio.back"></button>
+          </div>
+
+          <!-- analyzing state -->
+          <div class="analyzing glass" id="analyzingBox">
+            <div class="analyzing-spinner"></div>
+            <h3 data-i18n="studio.analyzing"></h3>
+            <p data-i18n="studio.analyzing.sub"></p>
+            <div class="analyze-steps" id="analyzeSteps">
+              <div class="as" data-key="colors"><span class="as-dot"></span><span data-i18n="studio.an.colors"></span></div>
+              <div class="as" data-key="category"><span class="as-dot"></span><span data-i18n="studio.an.category"></span></div>
+              <div class="as" data-key="features"><span class="as-dot"></span><span data-i18n="studio.an.features"></span></div>
+              <div class="as" data-key="copy"><span class="as-dot"></span><span data-i18n="studio.an.copy"></span></div>
+              <div class="as" data-key="layout"><span class="as-dot"></span><span data-i18n="studio.an.layout"></span></div>
+            </div>
+          </div>
+
+          <!-- detection result -->
+          <div class="detection glass" id="detectionBox" hidden>
+            <div class="detection-head"><span class="dh-badge">✓ AI</span><h3 data-i18n="studio.detected"></h3></div>
+            <div class="det-row"><span class="det-label" data-i18n="studio.detected.category"></span><div class="det-val"><select id="detCategory" class="mini-select"></select></div></div>
+            <div class="det-row"><span class="det-label" data-i18n="studio.detected.palette"></span><div class="det-palette" id="detPalette"></div></div>
+            <div class="det-row"><span class="det-label" data-i18n="studio.detected.materials"></span><div class="det-chips" id="detMaterials"></div></div>
+            <div class="det-row"><span class="det-label" data-i18n="studio.detected.features"></span><div class="det-chips" id="detFeatures"></div></div>
+            <div class="det-row"><span class="det-label" data-i18n="studio.detected.advantages"></span><div class="det-chips" id="detAdvantages"></div></div>
+          </div>
+        </div>
+
+        <!-- Right: controls -->
+        <div class="analyze-right">
+          <div class="controls glass">
+            <h3 class="controls-title" data-i18n="studio.controls.title"></h3>
+
+            <label class="ctl-label" data-i18n="studio.controls.marketplace"></label>
+            <div class="seg" id="mkSeg"></div>
+
+            <label class="ctl-label" data-i18n="studio.controls.language"></label>
+            <div class="seg" id="langSeg"></div>
+
+            <label class="ctl-label" data-i18n="studio.controls.style"></label>
+            <div class="style-grid" id="styleGrid"></div>
+
+            <label class="ctl-label" data-i18n="studio.controls.prompt"></label>
+            <textarea id="promptInput" class="ctl-textarea" rows="2" data-i18n-placeholder="studio.controls.prompt_ph"></textarea>
+
+            <div class="copy-block">
+              <div class="copy-head"><span data-i18n="studio.controls.copy_title"></span><span class="ai-chip">AI</span></div>
+              <label class="ctl-label" data-i18n="studio.controls.product_name"></label>
+              <input id="nameInput" class="ctl-input" data-i18n-placeholder="studio.controls.product_name_ph">
+            </div>
+
+            <button class="btn btn-primary btn-lg btn-block" id="generateBtn" data-i18n="studio.generate"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: RESULT -->
+    <div class="studio-panel" id="panelResult" hidden>
+      <!-- generating overlay handled separately -->
+      <div class="result-grid">
+        <div class="result-main">
+          <div class="result-stage" id="resultStage"><!-- big slide --></div>
+        </div>
+        <div class="result-side">
+          <div class="result-actions">
+            <button class="btn btn-primary btn-block" id="editBtn"><span>🎚️</span> <span data-i18n="studio.result.edit"></span></button>
+            <button class="btn btn-ghost btn-block" id="variantBtn"><span>🔁</span> <span data-i18n="studio.result.new"></span></button>
+            <div class="result-dl">
+              <button class="btn btn-ghost" id="dlPngBtn"><span>🖼️</span> <span data-i18n="studio.result.download_png"></span></button>
+              <button class="btn btn-ghost" id="dlPdfBtn"><span>📄</span> <span data-i18n="studio.result.download_all"></span></button>
+            </div>
+            <button class="btn btn-outline btn-block" id="saveBtn"><span>💾</span> <span data-i18n="studio.result.save"></span></button>
+            <button class="btn btn-text btn-block" id="newUploadBtn" data-i18n="studio.back"></button>
+          </div>
+          <div class="result-slides">
+            <p class="rs-title" data-i18n="studio.result.slides"></p>
+            <div class="slides-thumbs" id="slidesThumbs"><!-- generated --></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DASHBOARD VIEW ============================ -->
+<section id="view-dashboard" class="view dashboard">
+  <div class="container">
+    <div class="dash-head">
+      <div>
+        <h1 data-i18n="dashboard.title"></h1>
+        <p><span data-i18n="dashboard.welcome"></span>, <b id="dashName">Гость</b> 👋</p>
+      </div>
+      <button class="btn btn-primary" data-nav="studio"><span>＋</span> <span data-i18n="dashboard.new"></span></button>
+    </div>
+
+    <div class="dash-stats">
+      <div class="dstat glass"><div class="dstat-ic">🖼️</div><div><b id="statCreated">0</b><span data-i18n="dashboard.stat.created"></span></div></div>
+      <div class="dstat glass"><div class="dstat-ic">💾</div><div><b id="statSaved">0</b><span data-i18n="dashboard.stat.saved"></span></div></div>
+      <div class="dstat glass"><div class="dstat-ic">⚡</div><div><b id="statCredits">10</b><span data-i18n="dashboard.stat.credits"></span></div></div>
+      <div class="dstat glass dstat-plan"><div class="dstat-ic">💎</div><div><b id="statPlan">Free</b><span data-i18n="dashboard.stat.plan"></span></div></div>
+    </div>
+
+    <div class="dash-tabs" id="dashTabs">
+      <button class="dtab active" data-tab="projects" data-i18n="dashboard.tab.projects"></button>
+      <button class="dtab" data-tab="saved" data-i18n="dashboard.tab.saved"></button>
+      <button class="dtab" data-tab="account" data-i18n="dashboard.tab.account"></button>
+    </div>
+
+    <div class="dash-tab-body" id="tabProjects">
+      <div class="projects-grid" id="projectsGrid"></div>
+      <div class="empty" id="emptyProjects" hidden>
+        <div class="empty-ic">🪄</div>
+        <h3 data-i18n="dashboard.empty.title"></h3>
+        <p data-i18n="dashboard.empty.sub"></p>
+        <button class="btn btn-primary" data-nav="studio" data-i18n="dashboard.empty.btn"></button>
+      </div>
+    </div>
+
+    <div class="dash-tab-body" id="tabSaved" hidden>
+      <div class="projects-grid" id="savedGrid"></div>
+      <div class="empty" id="emptySaved" hidden>
+        <div class="empty-ic">💾</div>
+        <h3 data-i18n="dashboard.empty.title"></h3>
+        <p data-i18n="dashboard.empty.sub"></p>
+        <button class="btn btn-primary" data-nav="studio" data-i18n="dashboard.empty.btn"></button>
+      </div>
+    </div>
+
+    <div class="dash-tab-body" id="tabAccount" hidden>
+      <div class="account-grid">
+        <div class="account-card glass">
+          <div class="account-avatar" id="accAvatar">U</div>
+          <div class="account-field"><span data-i18n="dashboard.account.name"></span><b id="accName">—</b></div>
+          <div class="account-field"><span data-i18n="dashboard.account.email"></span><b id="accEmail">—</b></div>
+          <button class="btn btn-ghost btn-block" id="logoutBtn" data-i18n="dashboard.account.logout"></button>
+        </div>
+        <div class="account-card glass">
+          <div class="plan-badge" id="accPlanBadge">Free</div>
+          <p class="account-usage-label" data-i18n="dashboard.account.usage"></p>
+          <div class="usage-bar"><span id="usageFill"></span></div>
+          <p class="usage-text"><b id="usageUsed">0</b> / <span id="usageTotal">10</span></p>
+          <button class="btn btn-primary btn-block" data-scroll="pricing" data-nav="home" data-i18n="dashboard.account.upgrade"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ MODALS / OVERLAYS ============================ -->
+
+<!-- Auth modal -->
+<div class="modal" id="authModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card auth-card glass">
+    <button class="modal-x" data-close>✕</button>
+    <div class="auth-brand"><span class="logo-mark">K</span><span class="logo-text">Kartix<i>AI</i></span></div>
+    <h2 id="authTitle" data-i18n="auth.login.title"></h2>
+    <p id="authSub" class="auth-sub" data-i18n="auth.login.sub"></p>
+    <div class="field" id="nameField" hidden>
+      <label data-i18n="auth.name"></label>
+      <input id="authName" type="text" data-i18n-placeholder="auth.name_ph">
+    </div>
+    <div class="field">
+      <label data-i18n="auth.email"></label>
+      <input id="authEmail" type="email" data-i18n-placeholder="auth.email_ph">
+    </div>
+    <div class="field">
+      <label data-i18n="auth.password"></label>
+      <input id="authPassword" type="password" data-i18n-placeholder="auth.password_ph">
+    </div>
+    <button class="btn btn-primary btn-block btn-lg" id="authSubmit" data-i18n="auth.login.btn"></button>
+    <button class="auth-toggle" id="authToggle" data-i18n="auth.toggle.to_register"></button>
+    <div class="auth-divider"><span data-i18n="auth.or"></span></div>
+    <button class="btn btn-ghost btn-block" id="guestBtn" data-i18n="auth.guest"></button>
+    <p class="auth-note" data-i18n="auth.demo_note"></p>
+  </div>
+</div>
+
+<!-- Editor modal -->
+<div class="modal modal-wide" id="editorModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card editor-card">
+    <div class="editor-header">
+      <h2 data-i18n="editor.title"></h2>
+      <button class="btn btn-primary" id="editorDone" data-i18n="editor.close"></button>
+    </div>
+    <div class="editor-body">
+      <div class="editor-canvas-wrap"><div id="editorStage"></div></div>
+      <div class="editor-panel">
+        <div class="editor-tabs">
+          <button class="etab active" data-etab="content" data-i18n="editor.content"></button>
+          <button class="etab" data-etab="design" data-i18n="editor.design"></button>
+          <button class="etab" data-etab="layout" data-i18n="editor.layout"></button>
+        </div>
+        <div class="editor-fields" id="editorFields"><!-- generated per tab --></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generating overlay -->
+<div class="gen-overlay" id="genOverlay" hidden>
+  <div class="gen-box">
+    <div class="gen-orb"><span></span><span></span><span></span></div>
+    <h3 data-i18n="studio.generating"></h3>
+    <div class="gen-bar"><span id="genBarFill"></span></div>
+  </div>
+</div>
+
+<!-- Limit modal -->
+<div class="modal" id="limitModal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card limit-card glass">
+    <button class="modal-x" data-close>✕</button>
+    <div class="limit-ic">⚡</div>
+    <h2 data-i18n="studio.limit.title"></h2>
+    <p data-i18n="studio.limit.sub"></p>
+    <button class="btn btn-primary btn-lg btn-block" id="limitCta" data-scroll="pricing" data-nav="home" data-i18n="studio.limit.btn"></button>
+  </div>
+</div>
+
+<!-- Offscreen full-resolution render target for export -->
+<div id="exportRoot" aria-hidden="true"></div>
+
+<!-- Toasts -->
+<div class="toasts" id="toasts"></div>
+
+<!-- Mobile menu backdrop -->
+<div class="mobile-backdrop" id="mobileBackdrop"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
