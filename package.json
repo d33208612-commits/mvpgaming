@@ -1,18 +1,32 @@
 {
   "name": "kartix-ai",
-  "version": "1.0.0",
-  "description": "Kartix AI — AI infographic generator for Uzum, Wildberries and Ozon marketplaces. Static frontend; no build step.",
+  "version": "1.1.0",
+  "description": "Kartix AI — AI infographic generator for Uzum, Wildberries and Ozon. Static frontend + optional Claude API backend.",
   "private": true,
   "scripts": {
-    "test": "node test/harness.mjs",
-    "shots": "node test/shoot.mjs",
-    "serve": "python3 -m http.server 8000"
+    "start": "node server.js",
+    "serve": "python3 -m http.server 8000",
+    "test": "node test/harness.mjs && node test/server.test.cjs",
+    "shots": "node test/shoot.mjs"
   },
-  "keywords": ["ai", "marketplace", "infographic", "uzum", "wildberries", "ozon", "saas"],
+  "keywords": [
+    "ai",
+    "claude",
+    "marketplace",
+    "infographic",
+    "uzum",
+    "wildberries",
+    "ozon",
+    "saas"
+  ],
   "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
+    "express": "^4.22.2"
+  },
   "devDependencies": {
     "jsdom": "^29.1.1",
     "playwright-core": "^1.60.0"
   },
-  "comment": "html2canvas and jsPDF are vendored in js/vendor/ for offline export; install them via npm only when re-vendoring."
+  "comment": "html2canvas and jsPDF are vendored in js/vendor/ for offline export."
 }

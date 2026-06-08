@@ -262,6 +262,65 @@
   }
   const detFromCard = (c) => ({ categoryId: c.categoryId, accent: c.accent, palette: c.palette, emoji: c.emoji, imageSrc: c.imageSrc });
 
+  /* ---- Live Claude backend (optional; falls back to local generator) ---- */
+  AI.live = false;
+  AI.checkHealth = async function () {
+    try {
+      if (typeof fetch !== "function") { AI.live = false; updateLiveBadge(); return; }
+      const r = await fetch("api/health");
+      const j = await r.json();
+      AI.live = !!(j && j.live); AI.model = j && j.model;
+    } catch (e) { AI.live = false; }
+    updateLiveBadge();
+  };
+  AI.generateRemote = async function (det, opts) {
+    const img = det.imageSrc;
+    const body = {
+      lang: opts.lang, marketplace: opts.marketplace,
+      prompt: opts.prompt || "", productName: (opts.name || "").trim(), categoryHint: det.categoryId,
+      image: img ? { data: img.split(",")[1], mediaType: (img.match(/^data:(.*?);/) || [])[1] || "image/png" } : null,
+    };
+    const r = await fetch("api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const j = await r.json();
+    if (!j || !j.ok || !j.card) throw new Error("fallback");
+    return j.card;
+  };
+
+  // Map Claude's structured response into our card shape (keeps local palette/photo).
+  function mergeRemoteCard(r, det, opts) {
+    const lang = opts.lang;
+    const categoryId = D.CATEGORIES[r.category] ? r.category : det.categoryId;
+    det.categoryId = categoryId;
+    const cat = D.CATEGORIES[categoryId] || D.CATEGORIES.generic;
+    const d = Math.min(80, Math.max(0, r.discount_percent || 0)) / 100;
+    const price = Math.max(1000, Math.round(r.price || 0)) || Math.round(rand(149, 899)) * 1000 + 900;
+    const oldPrice = d > 0 ? Math.round(price / (1 - d)) : 0;
+    const features = (r.feature_chips || []).slice(0, 3).map((f) => ({ e: f.emoji || "✅", t: f.text || "" }));
+    const benefits = (r.benefits || []).slice(0, 4).map((b) => ({ icon: b.icon || "✅", t: b.title || "", d: b.desc || "" }));
+    const specs = (r.specs || []).slice(0, 5).map((s) => ({ k: s.key || "", v: s.value || "" }));
+    const bonus = (r.bonus || []).slice(0, 4).map((b) => ({ icon: b.icon || "🎁", t: b.title || "", d: b.desc || "" }));
+    const sizes = Array.isArray(r.sizes) && r.sizes.length ? r.sizes.slice(0, 8) : null;
+    const mk = opts.marketplace;
+    return Object.assign({
+      id: uid(), createdAt: Date.now(),
+      categoryId, accent: det.accent, palette: det.palette, emoji: det.emoji || cat.emoji, imageSrc: det.imageSrc || null,
+      lang, style: opts.style, marketplace: mk, sizeId: mk === "wb" ? "wb34" : "portrait34", font: "jakarta",
+      brand: "BRAND", showBadge: true, showPrice: true, showRating: true, prompt: opts.prompt || "",
+      name: r.name || cat.name[lang], title: r.name || cat.name[lang],
+      headline: r.headline || "", sub: r.description || "",
+      badge: r.badge || "", discount: d > 0 ? "-" + Math.round(d * 100) + "%" : "",
+      price: fmtPrice(price), oldPrice: oldPrice ? fmtPrice(oldPrice) : "", currency: currency(lang),
+      rating: String(r.rating || "4.8"), reviews: typeof r.reviews === "number" ? fmtPrice(r.reviews) : String(r.reviews || "1 000"),
+      features: features.length ? features : (cat.features[lang].slice(0, 3).map((t, i) => ({ e: "✅", t }))),
+      benefits, specs,
+      compareUs: r.compare_us || D.COPY.compare.us[lang], compareThem: r.compare_them || D.COPY.compare.them[lang],
+      compareRows: (r.compare_rows && r.compare_rows.length ? r.compare_rows : D.COPY.compare.rows[lang]).slice(0, 5),
+      bonus: bonus.length ? bonus : D.COPY.bonus[lang].slice(), seo: r.seo || "", cta: r.cta || pick(D.COPY.cta[lang]),
+      sizes, materials: r.materials, detectedFeatures: r.detected_features, detectedAdvantages: r.advantages,
+    });
+  }
+  function updateLiveBadge() { const el = $("#aiMode"); if (!el) return; el.hidden = !AI.live; if (AI.live) el.textContent = "⚡ Claude AI"; }
+
   /* ============================ SLIDE RENDERER ============================ */
   function sizeOf(card) { return D.SIZES.find((s) => s.id === card.sizeId) || D.SIZES[0]; }
   const FONTS = { jakarta: '"Plus Jakarta Sans", sans-serif', inter: '"Inter", sans-serif', mono: '"DejaVu Sans Mono", ui-monospace, monospace' };
@@ -735,28 +794,47 @@
     sel.value = v;
   }
 
-  function doGenerate(isVariant) {
+  async function doGenerate(isVariant) {
     if (creditsLeft() <= 0) { openModal("limitModal"); return; }
-    state.used++;
     const opts = { lang: studioOpts.lang, style: studioOpts.style, marketplace: studioOpts.marketplace, name: $("#nameInput").value, prompt: $("#promptInput").value };
     const det = cur.detection;
-    const card = makeCard(det, opts);
+    showGenOverlay();
+    let card, usedClaude = false;
+    try {
+      if (AI.live) {
+        const remote = await AI.generateRemote(det, opts);
+        card = mergeRemoteCard(remote, det, opts);
+        usedClaude = true;
+      } else {
+        await sleep(700 + Math.random() * 600);
+        card = makeCard(det, opts);
+      }
+    } catch (e) {
+      card = makeCard(det, opts); // network/API failure → local generator
+    }
+    state.used++;
     cur.card = card; cur.slideType = "main";
     const project = { id: card.id, createdAt: card.createdAt, card };
     state.projects.unshift(project);
     state.projects = state.projects.slice(0, 30);
     cur.projectRef = project;
     save();
-    runGenOverlay().then(() => { setStep(3); showResult(); updateUsageUI(); toast(isVariant ? "toast.variant" : "toast.copy_done"); });
+    hideGenOverlay();
+    setStep(3); showResult(); updateUsageUI();
+    toast(usedClaude ? "toast.ai_done" : (isVariant ? "toast.variant" : "toast.copy_done"));
   }
 
-  function runGenOverlay() {
-    const ov = $("#genOverlay"); const bar = $("#genBarFill");
+  function showGenOverlay() {
+    const ov = $("#genOverlay"), bar = $("#genBarFill");
     ov.hidden = false; bar.style.width = "0%";
-    return new Promise((res) => {
-      let p = 0;
-      const iv = setInterval(() => { p += rand(8, 20); bar.style.width = Math.min(100, p) + "%"; if (p >= 100) { clearInterval(iv); setTimeout(() => { ov.hidden = true; res(); }, 250); } }, 160);
-    });
+    let p = 0;
+    ov._iv = setInterval(() => { p += Math.max(0.6, (88 - p) * 0.06); bar.style.width = Math.min(90, p) + "%"; }, 180);
+  }
+  function hideGenOverlay() {
+    const ov = $("#genOverlay"), bar = $("#genBarFill");
+    if (ov._iv) clearInterval(ov._iv);
+    bar.style.width = "100%";
+    setTimeout(() => { ov.hidden = true; }, 240);
   }
 
   function showResult() {
@@ -1306,6 +1384,7 @@
     setStep(1);
     bind();
     initReveal();
+    AI.checkHealth();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

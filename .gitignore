@@ -3,4 +3,5 @@ package-lock.json
 test/shots/
 *.log
 *.zip
+.env
 .DS_Store
