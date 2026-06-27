@@ -364,4 +364,9 @@ if (fs.existsSync(webDist)) {
 
 app.listen(config.port, () => {
   console.log(`[server] listening on http://localhost:${config.port}`);
+  if (config.runBot) {
+    import('./bot.js')
+      .then((m) => m.startBot())
+      .catch((e) => console.error('[bot] failed to start:', e.message));
+  }
 });

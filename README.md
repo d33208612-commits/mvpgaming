@@ -45,27 +45,54 @@ npm run dev                 # http://localhost:5173  (api проксируетс
 добавьте `?dev=НОМЕР` к адресу (например `localhost:5173/?dev=5001` — работодатель,
 `?dev=6002` — соискатель).
 
-## Прод-сборка (один процесс)
+## Деплой за 1 клик (Render, бесплатно, HTTPS из коробки)
+
+В репозитории есть `render.yaml` — готовый blueprint:
+
+1. Запушьте репозиторий в GitHub (уже сделано).
+2. Зайдите на [render.com](https://render.com) → **New → Blueprint** → выберите этот репозиторий.
+3. Когда Render попросит — вставьте **BOT_TOKEN**. Больше ничего вводить не нужно.
+4. Render соберёт фронтенд, запустит сервер и выдаст HTTPS-адрес вида
+   `https://rabota-ryadom.onrender.com`.
+
+**Бот настроится сам.** При старте сервер (см. `server/src/bot.js`):
+- определяет публичный URL из `RENDER_EXTERNAL_URL`,
+- выставляет кнопку-меню бота на Mini App (`setChatMenuButton`),
+- отвечает на `/start` кнопкой «🚀 Открыть приложение».
+
+То есть после деплоя достаточно открыть бота в Telegram и нажать кнопку — заходить
+в @BotFather вручную не нужно.
+
+> ℹ️ На бесплатном плане Render файловая система временная — база SQLite сбросится
+> при перезапуске сервиса. Для постоянного хранения подключите Render Disk
+> (`DB_PATH=/var/data/app.db`) или внешнюю БД.
+
+## Деплой через Docker (Railway, Fly.io, VPS)
 
 ```bash
-cd web && npm install && npm run build      # создаёт web/dist
-cd ../server && npm install
-NODE_ENV=production ALLOW_DEV_AUTH=0 BOT_TOKEN=ВАШ_ТОКЕН npm start
+docker build -t rabota-ryadom .
+docker run -p 3001:3001 -e BOT_TOKEN=ВАШ_ТОКЕН -e PUBLIC_URL=https://ваш-домен rabota-ryadom
+```
+
+## Прод-сборка вручную (один процесс)
+
+```bash
+npm run install:all
+npm run build                               # собирает web/dist
+NODE_ENV=production ALLOW_DEV_AUTH=0 BOT_TOKEN=ВАШ_ТОКЕН PUBLIC_URL=https://ваш-домен npm start
 ```
 
 Сервер сам раздаёт собранный фронтенд из `web/dist` и API на одном порту.
 
-## Подключение к Telegram
+## Подключение к Telegram (если не используете авто-настройку)
 
 1. Создайте бота у [@BotFather](https://t.me/BotFather) → получите **токен**.
-2. Впишите токен в `server/.env` → `BOT_TOKEN=...` (обязательно для проверки подписи).
-3. Задеплойте приложение на HTTPS-домен (Telegram Mini Apps работают только по HTTPS).
-4. В @BotFather: `/newapp` или `/setmenubutton` → укажите URL вашего приложения.
-5. Откройте бота, нажмите кнопку меню — Mini App откроется и авторизует вас автоматически.
+2. Задеплойте приложение на HTTPS-домен (Mini Apps работают только по HTTPS).
+3. В @BotFather: `/setmenubutton` → укажите URL приложения (или дайте боту настроиться самому).
 
-> ⚠️ Токен бота в исходный код не коммитится — он хранится в `server/.env`
-> (файл в `.gitignore`). Если токен попал в чат/репозиторий, отзовите его через
-> `/revoke` у @BotFather и выпустите новый.
+> ⚠️ Токен бота в исходный код **не коммитится** — он живёт только в переменной
+> окружения / `server/.env` (файл в `.gitignore`). Если токен попал в чат или
+> репозиторий — отзовите его через `/revoke` у @BotFather и выпустите новый.
 
 ## API (вкратце)
 

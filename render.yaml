@@ -1,0 +1,21 @@
+# Render.com blueprint — one-click deploy with automatic HTTPS.
+# 1. Push this repo to GitHub.
+# 2. On render.com → New → Blueprint → select this repo.
+# 3. When prompted, paste your BOT_TOKEN. Done — Render builds and serves over HTTPS.
+services:
+  - type: web
+    name: rabota-ryadom
+    runtime: node
+    plan: free
+    buildCommand: npm --prefix server install && npm --prefix web install && npm --prefix web run build
+    startCommand: npm --prefix server start
+    envVars:
+      - key: BOT_TOKEN
+        sync: false          # Render will prompt you to enter it securely
+      - key: NODE_ENV
+        value: production
+      - key: ALLOW_DEV_AUTH
+        value: "0"
+      - key: RUN_BOT
+        value: "1"
+      # PUBLIC_URL is auto-detected from RENDER_EXTERNAL_URL — no need to set it.

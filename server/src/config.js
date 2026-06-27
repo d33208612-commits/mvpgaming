@@ -7,6 +7,16 @@ export const config = {
   initDataMaxAge: Number(process.env.INITDATA_MAX_AGE ?? 86400),
   dbPath: process.env.DB_PATH || './data/app.db',
   isProd: process.env.NODE_ENV === 'production',
+  // Public HTTPS URL of the deployed Mini App. Used to auto-configure the bot
+  // menu button and the /start button. Render/Railway expose this automatically.
+  publicUrl:
+    process.env.PUBLIC_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    (process.env.RAILWAY_PUBLIC_DOMAIN
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+      : ''),
+  // Run the built-in bot (menu button + /start handler) alongside the server.
+  runBot: process.env.RUN_BOT !== '0',
 };
 
 if (!config.botToken) {
