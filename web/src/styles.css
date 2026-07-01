@@ -19,6 +19,8 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+button { background: none; border: none; color: inherit; font: inherit; cursor: pointer; }
+input, textarea, select { font-family: inherit; }
 html, body, #root { height: 100%; }
 
 body {
@@ -72,13 +74,15 @@ body {
 .lang-btn .chev { transition: transform 0.25s ease; opacity: 0.7; }
 .lang-btn.open .chev { transform: rotate(180deg); }
 .lang-menu {
-  position: absolute; top: calc(100% + 8px); left: 0; min-width: 190px;
-  background: var(--panel-2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 6px; box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+  position: absolute; top: calc(100% + 8px); left: 0; min-width: 200px;
+  background: var(--panel-2); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); padding: 6px; box-shadow: 0 18px 50px rgba(0,0,0,0.55);
   transform-origin: top left; animation: pop 0.18s ease;
 }
 @keyframes pop { from { opacity: 0; transform: scale(0.94) translateY(-4px); } to { opacity: 1; transform: none; } }
-.lang-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; border-radius: 10px; color: var(--text); font-weight: 600; }
+.lang-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 13px; border-radius: 11px; background: transparent; color: var(--text); font-weight: 600; }
+.lang-item + .lang-item { margin-top: 4px; }
+.lang-item.active { background: var(--panel-3); }
 .lang-item:active { background: var(--panel-3); }
 .lang-item .check { margin-left: auto; color: var(--accent-2); }
 
@@ -195,6 +199,7 @@ body {
 .avatar.sm.avatar-fallback { font-size: 18px; }
 .profile-head h2 { font-size: 20px; font-weight: 800; }
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 11px; margin-bottom: var(--gap); }
+.stats-grid.two { grid-template-columns: repeat(2, 1fr); }
 .stat { text-align: center; padding: 18px 8px; margin: 0; }
 .stat-value { display: block; font-size: 24px; font-weight: 800; }
 .stat-label { font-size: 12px; color: var(--muted); }

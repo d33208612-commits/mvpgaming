@@ -18,7 +18,6 @@ export default function LanguageSwitcher() {
   return (
     <div className="lang-wrap" ref={ref}>
       <button className={open ? 'lang-btn open' : 'lang-btn'} onClick={() => { haptic(); setOpen((o) => !o); }}>
-        <span>{current.flag}</span>
         <span>{current.short}</span>
         <svg className="chev" viewBox="0 0 24 24" width="16" height="16" fill="none"
           stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -29,9 +28,8 @@ export default function LanguageSwitcher() {
       {open && (
         <div className="lang-menu">
           {LANGS.map((l) => (
-            <button key={l.value} className="lang-item"
+            <button key={l.value} className={l.value === lang ? 'lang-item active' : 'lang-item'}
               onClick={() => { setLang(l.value); setOpen(false); haptic(); }}>
-              <span>{l.flag}</span>
               <span>{l.label}</span>
               {l.value === lang && (
                 <svg className="check" viewBox="0 0 24 24" width="18" height="18" fill="none"

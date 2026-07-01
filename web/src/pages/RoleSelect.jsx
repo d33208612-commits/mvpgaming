@@ -30,20 +30,17 @@ export default function RoleSelect() {
       </div>
 
       <div className="role-hero">
-        <div className="role-logo">💼</div>
         <h1>{t('appName')}</h1>
         <p>{t('roleGreeting', { name: user.first_name || '👋' })}</p>
       </div>
 
       <div className="role-cards">
         <button className="role-card" disabled={busy} onClick={() => choose('seeker')}>
-          <span className="role-emoji">🔎</span>
           <span className="role-title">{t('roleSeeker')}</span>
           <span className="role-desc">{t('roleSeekerDesc')}</span>
         </button>
 
         <button className="role-card" disabled={busy} onClick={() => choose('employer')}>
-          <span className="role-emoji">🏢</span>
           <span className="role-title">{t('roleEmployer')}</span>
           <span className="role-desc">{t('roleEmployerDesc')}</span>
         </button>

@@ -30,10 +30,9 @@ export default function Profile() {
 
       {isEmployer ? (
         <>
-          <div className="stats-grid">
+          <div className="stats-grid two">
             <Stat value={user.stats.vacancies_total} label={t('statVacancies')} />
             <Stat value={user.stats.vacancies_closed} label={t('statClosed')} />
-            <Stat value={(user.rating ?? 5).toFixed(1)} label={`${t('statRating')} ⭐`} />
           </div>
           <div className="card info-list">
             <InfoRow label={t('company')} value={user.company || '—'} />

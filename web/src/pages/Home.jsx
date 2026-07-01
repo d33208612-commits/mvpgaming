@@ -106,11 +106,6 @@ export default function Home() {
   );
 }
 
-function Empty({ icon, text }) {
-  return (
-    <div className="empty">
-      <div className="empty-icon" style={{ fontSize: 34 }}>{icon}</div>
-      {text}
-    </div>
-  );
+function Empty({ text }) {
+  return <div className="empty">{text}</div>;
 }

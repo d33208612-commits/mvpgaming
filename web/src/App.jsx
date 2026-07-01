@@ -18,7 +18,7 @@ import AdminProfile from './pages/AdminProfile.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import Loader from './components/Loader.jsx';
 
-const NAV_EMPLOYER = ['home', 'search', 'post', 'profile'];
+const NAV_EMPLOYER = ['home', 'post', 'profile'];
 const NAV_SEEKER = ['home', 'search', 'chats', 'profile'];
 const NAV_ADMIN = ['requests', 'search', 'chats', 'admin'];
 

@@ -21,10 +21,7 @@ export default function Chats() {
       {chats === null ? (
         <Loader />
       ) : chats.length === 0 ? (
-        <div className="empty">
-          <div className="empty-icon" style={{ fontSize: 34 }}>💬</div>
-          {t('noChats')}
-        </div>
+        <div className="empty">{t('noChats')}</div>
       ) : (
         <div className="chat-list">
           {chats.map((c) => {
