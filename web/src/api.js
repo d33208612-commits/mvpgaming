@@ -37,7 +37,11 @@ async function request(path, { method = 'GET', body, params } = {}) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `HTTP ${res.status}`);
+    const e = new Error(err.error || `HTTP ${res.status}`);
+    e.code = err.error;
+    e.data = err;
+    e.status = res.status;
+    throw e;
   }
   return res.json();
 }
@@ -46,7 +50,13 @@ export const api = {
   auth: () => request('/auth', { method: 'POST' }),
   me: () => request('/me'),
   setRole: (role) => request('/role', { method: 'POST', body: { role } }),
+  setLang: (lang) => request('/lang', { method: 'POST', body: { lang } }),
   updateProfile: (data) => request('/profile', { method: 'PUT', body: data }),
+
+  feed: () => request('/feed'),
+  adminLogin: (password) => request('/admin/login', { method: 'POST', body: { password } }),
+  adminVacancies: () => request('/admin/vacancies'),
+  adminDelete: (id) => request(`/admin/vacancies/${id}`, { method: 'DELETE' }),
 
   listVacancies: (filters) => request('/vacancies', { params: filters }),
   getVacancy: (id) => request(`/vacancies/${id}`),

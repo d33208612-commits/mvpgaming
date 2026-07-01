@@ -17,6 +17,12 @@ export const config = {
       : ''),
   // Run the built-in bot (menu button + /start handler) alongside the server.
   runBot: process.env.RUN_BOT !== '0',
+  // Admin panel password (set via env; provided by the owner).
+  adminPassword: process.env.ADMIN_PASSWORD || '',
+  // Telegram username opened by the "Поддержка" button (without @).
+  supportUsername: (process.env.SUPPORT_USERNAME || 'developer_kd').replace('@', ''),
+  // Max vacancies a single employer may publish per rolling 7 days.
+  vacancyWeeklyLimit: Number(process.env.VACANCY_WEEKLY_LIMIT || 5),
 };
 
 if (!config.botToken) {

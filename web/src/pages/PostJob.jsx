@@ -1,113 +1,162 @@
 import { useState } from 'react';
 import { api } from '../api.js';
 import { useApp } from '../store.jsx';
+import { useLang } from '../i18n.jsx';
 import { haptic } from '../telegram.js';
-import { CITIES, CATEGORIES, WORK_TYPES } from '../constants.js';
+import {
+  CITIES, CATEGORIES, WORK_FORMATS, SCHEDULES, WORK_HOURS, EXPERIENCE, CONTACT_TYPES, localize,
+} from '../constants.js';
 import Header from '../components/Header.jsx';
 import { Field, TextInput, TextArea, Select, Chips } from '../components/Field.jsx';
 
+const CalIcon = <Ic d="M8 2v3M16 2v3M3 9h18M5 4h14a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />;
+const PinIcon = <Ic d="M12 21s-7-6.3-7-11a7 7 0 1 1 14 0c0 4.7-7 11-7 11zM12 10a2 2 0 1 0 0-.01" />;
+const SendIcon = <Ic d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />;
+
+function Ic({ d }) {
+  return (
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+  );
+}
+
 export default function PostJob() {
   const { navigate } = useApp();
-  const [form, setForm] = useState({
-    title: '',
-    city: '',
-    salary: '',
-    work_type: 'full',
-    category: '',
-    description: '',
-    requirements: '',
-    schedule: '',
-    address: '',
-    remote: false,
-    no_experience: false,
-    contact: 'Написать в Telegram',
+  const { t, lang } = useLang();
+  const [f, setF] = useState({
+    title: '', city: '', salary: '', category: '',
+    work_format: 'onsite', schedule: '5/2', schedule_other: '',
+    work_hours: '09:00–18:00', hours_other: '',
+    experience: 'required', description: '', requirements: '', address: '',
+    contact_type: 'telegram', contact_phone: '',
   });
   const [busy, setBusy] = useState(false);
-  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+  const [errors, setErrors] = useState({});
+  const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
-  const canSubmit = form.title && form.city && form.salary && form.work_type;
+  const canSubmit = f.title && f.city && f.salary && f.work_format;
+
+  function onPhone(e) {
+    const val = e.target.value;
+    if (/[^\d\s+()-]/.test(val)) {
+      setErrors((x) => ({ ...x, phone: t('onlyDigits') }));
+      return;
+    }
+    setErrors((x) => ({ ...x, phone: null }));
+    set('contact_phone', val);
+  }
 
   async function submit() {
     if (!canSubmit || busy) return;
     setBusy(true);
     haptic('medium');
+    const payload = {
+      title: f.title, city: f.city, salary: f.salary, category: f.category,
+      work_format: f.work_format,
+      schedule: f.schedule === 'other' ? f.schedule_other : f.schedule,
+      work_hours: f.work_hours === 'other' ? f.hours_other : f.work_hours,
+      experience: f.experience,
+      description: f.description, requirements: f.requirements, address: f.address,
+      contact_type: f.contact_type,
+      contact_phone: f.contact_phone,
+      contact: f.contact_type === 'phone' ? f.contact_phone : t('howToApply'),
+    };
     try {
-      const { vacancy } = await api.createVacancy(form);
+      const { vacancy } = await api.createVacancy(payload);
       navigate('vacancy', { id: vacancy.id });
     } catch (e) {
-      alert('Не удалось создать вакансию: ' + e.message);
+      let msg = t('errGeneric', { msg: e.message });
+      if (e.code === 'banned_word') msg = t('errBanned');
+      else if (e.code === 'weekly_limit') msg = t('errLimit', { limit: e.data?.limit ?? 5 });
+      alert(msg);
       setBusy(false);
     }
   }
 
   return (
     <div className="page">
-      <Header title="Новая вакансия" back="home" />
+      <Header title={t('newVacancy')} back="home" />
 
-      <Field label="Название должности *">
-        <TextInput placeholder="Например, продавец-консультант"
-          value={form.title} onChange={(e) => set('title', e.target.value)} />
+      <Field label={t('jobTitle')} required>
+        <TextInput placeholder={t('jobTitlePh')} value={f.title}
+          onChange={(e) => set('title', e.target.value)} />
       </Field>
 
-      <Field label="Город *">
-        <Select options={CITIES} placeholder="Выберите город"
-          value={form.city} onChange={(e) => set('city', e.target.value)} />
+      <Field label={t('city')} icon={PinIcon} required>
+        <Select options={localize(CITIES, lang)} placeholder={t('selectCity')}
+          value={f.city} onChange={(e) => set('city', e.target.value)} />
       </Field>
 
-      <Field label="Зарплата *" hint="Например: 800 $ или от 5 000 000 сум">
-        <TextInput placeholder="800 $"
-          value={form.salary} onChange={(e) => set('salary', e.target.value)} />
+      <Field label={t('salary')} hint={t('salaryHint')} required>
+        <TextInput placeholder={t('salaryPh')} value={f.salary}
+          onChange={(e) => set('salary', e.target.value)} />
       </Field>
 
-      <Field label="Тип работы *">
-        <Chips options={WORK_TYPES} value={form.work_type}
-          onChange={(v) => set('work_type', v || 'full')} />
+      <Field label={t('workFormat')} required>
+        <Chips options={localize(WORK_FORMATS, lang)} value={f.work_format}
+          onChange={(v) => set('work_format', v || 'onsite')} allowUnset={false} />
       </Field>
 
-      <Field label="Категория">
-        <Select options={CATEGORIES} placeholder="Выберите категорию"
-          value={form.category} onChange={(e) => set('category', e.target.value)} />
+      <Field label={t('category')}>
+        <Select options={localize(CATEGORIES, lang)} placeholder={t('selectCategory')}
+          value={f.category} onChange={(e) => set('category', e.target.value)} />
       </Field>
 
-      <Field label="Описание">
-        <TextArea rows={4} placeholder="Расскажите о вакансии и обязанностях"
-          value={form.description} onChange={(e) => set('description', e.target.value)} />
+      <Field label={t('schedule')} icon={CalIcon}>
+        <Chips options={localize(SCHEDULES, lang)} value={f.schedule}
+          onChange={(v) => set('schedule', v || '5/2')} allowUnset={false} />
+      </Field>
+      {f.schedule === 'other' && (
+        <Field label="">
+          <TextInput placeholder={t('otherSchedulePh')} value={f.schedule_other}
+            onChange={(e) => set('schedule_other', e.target.value)} />
+        </Field>
+      )}
+
+      <Field label={t('workHours')}>
+        <Chips options={localize(WORK_HOURS, lang)} value={f.work_hours}
+          onChange={(v) => set('work_hours', v || '09:00–18:00')} allowUnset={false} />
+      </Field>
+      {f.work_hours === 'other' && (
+        <Field label="">
+          <TextInput placeholder={t('otherHoursPh')} value={f.hours_other}
+            onChange={(e) => set('hours_other', e.target.value)} />
+        </Field>
+      )}
+
+      <Field label={t('experience')}>
+        <Chips options={localize(EXPERIENCE, lang)} value={f.experience}
+          onChange={(v) => set('experience', v || 'required')} allowUnset={false} />
       </Field>
 
-      <Field label="Требования">
-        <TextArea rows={3} placeholder="Опыт, навыки, пожелания"
-          value={form.requirements} onChange={(e) => set('requirements', e.target.value)} />
+      <Field label={t('description')}>
+        <TextArea rows={4} placeholder={t('descriptionPh')} value={f.description}
+          onChange={(e) => set('description', e.target.value)} />
       </Field>
 
-      <Field label="График">
-        <TextInput placeholder="Например, 5/2 с 9:00 до 18:00"
-          value={form.schedule} onChange={(e) => set('schedule', e.target.value)} />
+      <Field label={t('requirements')}>
+        <TextArea rows={3} placeholder={t('requirementsPh')} value={f.requirements}
+          onChange={(e) => set('requirements', e.target.value)} />
       </Field>
 
-      <Field label="Адрес">
-        <TextInput placeholder="Улица, ориентир"
-          value={form.address} onChange={(e) => set('address', e.target.value)} />
+      <Field label={t('address')} icon={PinIcon}>
+        <TextInput placeholder={t('addressPh')} value={f.address}
+          onChange={(e) => set('address', e.target.value)} />
       </Field>
 
-      <div className="switch-row">
-        <label className="switch">
-          <input type="checkbox" checked={form.remote}
-            onChange={(e) => set('remote', e.target.checked)} />
-          <span>Удалённая работа</span>
-        </label>
-        <label className="switch">
-          <input type="checkbox" checked={form.no_experience}
-            onChange={(e) => set('no_experience', e.target.checked)} />
-          <span>Можно без опыта</span>
-        </label>
-      </div>
-
-      <Field label="Как откликаться" hint="По умолчанию — встроенный чат / Telegram">
-        <TextInput value={form.contact} onChange={(e) => set('contact', e.target.value)} />
+      <Field label={t('howToApply')} icon={SendIcon}>
+        <Chips options={localize(CONTACT_TYPES, lang)} value={f.contact_type}
+          onChange={(v) => set('contact_type', v || 'telegram')} allowUnset={false} />
       </Field>
+      {f.contact_type === 'phone' && (
+        <Field label="" hint={t('phoneUzHint')} error={errors.phone}>
+          <TextInput type="tel" inputMode="tel" placeholder={t('phonePh')}
+            invalid={!!errors.phone} value={f.contact_phone} onChange={onPhone} />
+        </Field>
+      )}
 
       <button className="btn btn-block" disabled={!canSubmit || busy} onClick={submit}>
-        {busy ? 'Публикуем…' : 'Опубликовать вакансию'}
+        {busy ? t('publishing') : t('publish')}
       </button>
     </div>
   );

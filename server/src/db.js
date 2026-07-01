@@ -60,7 +60,32 @@ CREATE TABLE IF NOT EXISTS messages (
   created_at    INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS applications (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  vacancy_id   INTEGER NOT NULL REFERENCES vacancies(id) ON DELETE CASCADE,
+  created_at   INTEGER NOT NULL,
+  UNIQUE(user_id, vacancy_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_vac_status ON vacancies(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_vac_employer ON vacancies(employer_id);
 CREATE INDEX IF NOT EXISTS idx_msg_vac ON messages(vacancy_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_app_user ON applications(user_id, created_at);
 `);
+
+// --- Lightweight migrations: add columns that may be missing on older DBs ---
+function addColumn(table, column, definition) {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+addColumn('users', 'profession', 'TEXT');
+addColumn('users', 'lang', "TEXT DEFAULT 'ru'");
+addColumn('users', 'is_admin', 'INTEGER DEFAULT 0');
+addColumn('vacancies', 'work_format', 'TEXT');       // onsite|remote|hybrid|field
+addColumn('vacancies', 'work_hours', 'TEXT');         // e.g. 09:00–18:00
+addColumn('vacancies', 'experience', 'TEXT');         // required|none|remote
+addColumn('vacancies', 'contact_type', "TEXT DEFAULT 'telegram'"); // telegram|phone
+addColumn('vacancies', 'contact_phone', 'TEXT');

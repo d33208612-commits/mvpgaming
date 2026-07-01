@@ -9,13 +9,13 @@ export function initTelegram() {
   try {
     tg.ready();
     tg.expand();
-    tg.setHeaderColor?.('secondary_bg_color');
+    // Fixed dark-navy brand theme (matches the app design).
+    tg.setBackgroundColor?.('#060a14');
+    tg.setHeaderColor?.('#060a14');
     tg.disableVerticalSwipes?.();
   } catch {
     /* older clients */
   }
-  applyTheme();
-  tg.onEvent?.('themeChanged', applyTheme);
 }
 
 export function getInitDataRaw() {
@@ -41,18 +41,7 @@ export function openTelegramChat(username) {
   else window.open(url, '_blank');
 }
 
-// Map Telegram theme params onto CSS variables so the app matches the client.
-function applyTheme() {
-  const p = tg?.themeParams;
-  if (!p) return;
-  const root = document.documentElement;
-  const set = (name, val) => val && root.style.setProperty(name, val);
-  set('--tg-bg', p.bg_color);
-  set('--tg-secondary-bg', p.secondary_bg_color);
-  set('--tg-text', p.text_color);
-  set('--tg-hint', p.hint_color);
-  set('--tg-link', p.link_color);
-  set('--tg-button', p.button_color);
-  set('--tg-button-text', p.button_text_color);
-  root.dataset.theme = tg?.colorScheme || 'light';
+export function openPhone(phone) {
+  const num = String(phone || '').replace(/[^\d+]/g, '');
+  if (num) window.location.href = `tel:${num}`;
 }

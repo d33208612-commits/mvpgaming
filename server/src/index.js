@@ -3,6 +3,8 @@ import cors from 'cors';
 import { config } from './config.js';
 import { db } from './db.js';
 import { validateInitData } from './initData.js';
+import { findBannedWord } from './moderation.js';
+import crypto from 'node:crypto';
 
 const app = express();
 app.use(cors());
@@ -98,6 +100,9 @@ function publicUser(u) {
     city: u.city,
     desired_salary: u.desired_salary,
     about: u.about,
+    profession: u.profession,
+    lang: u.lang || 'ru',
+    is_admin: !!u.is_admin,
     stats: { vacancies_total: total, vacancies_closed: closed },
   };
 }
@@ -152,17 +157,25 @@ app.put('/api/profile', auth, (req, res) => {
     );
   } else {
     db.prepare(
-      'UPDATE users SET name=?, age=?, city=?, desired_salary=?, about=? WHERE id=?'
+      'UPDATE users SET name=?, age=?, city=?, desired_salary=?, about=?, profession=? WHERE id=?'
     ).run(
       b.name ?? u.name,
-      b.age != null ? Number(b.age) : u.age,
+      b.age != null && b.age !== '' ? Number(b.age) : u.age,
       b.city ?? u.city,
       b.desired_salary ?? u.desired_salary,
       b.about ?? u.about,
+      b.profession ?? u.profession,
       u.id
     );
   }
   res.json({ user: publicUser(findByTg.get(u.telegram_id)) });
+});
+
+// Persist UI language choice
+app.post('/api/lang', auth, (req, res) => {
+  const lang = req.body?.lang === 'uz' ? 'uz' : 'ru';
+  db.prepare('UPDATE users SET lang=? WHERE id=?').run(lang, req.user.id);
+  res.json({ ok: true, lang });
 });
 
 // List vacancies with filters
@@ -171,10 +184,10 @@ app.get('/api/vacancies', auth, (req, res) => {
   const where = ["v.status='open'"];
   const args = [];
   if (q.city) { where.push('LOWER(v.city)=LOWER(?)'); args.push(q.city); }
-  if (q.work_type) { where.push('v.work_type=?'); args.push(q.work_type); }
+  if (q.work_format) { where.push('v.work_format=?'); args.push(q.work_format); }
   if (q.category) { where.push('v.category=?'); args.push(q.category); }
-  if (q.remote === '1') where.push('v.remote=1');
-  if (q.no_experience === '1') where.push('v.no_experience=1');
+  if (q.remote === '1') where.push("(v.work_format='remote' OR v.remote=1)");
+  if (q.no_experience === '1') where.push("(v.experience='none' OR v.no_experience=1)");
   if (q.salary_min) { where.push('v.salary_num>=?'); args.push(Number(q.salary_min)); }
   if (q.q) {
     where.push('(LOWER(v.title) LIKE ? OR LOWER(v.description) LIKE ?)');
@@ -202,17 +215,38 @@ app.post('/api/vacancies', auth, (req, res) => {
     return res.status(403).json({ error: 'not_employer' });
   }
   const b = req.body || {};
-  if (!b.title || !b.city || !b.salary || !b.work_type) {
+  const workFormat = b.work_format || b.work_type || 'onsite';
+  if (!b.title || !b.city || !b.salary || !workFormat) {
     return res.status(400).json({ error: 'missing_fields' });
   }
+
+  // Moderation: reject banned words.
+  const banned = findBannedWord(b.title, b.description, b.requirements, b.category);
+  if (banned) {
+    return res.status(400).json({ error: 'banned_word' });
+  }
+
+  // Weekly publication limit per employer.
+  const weekAgo = now() - 7 * 24 * 3600;
+  const recent = db
+    .prepare('SELECT COUNT(*) c FROM vacancies WHERE employer_id=? AND created_at>=?')
+    .get(req.user.id, weekAgo).c;
+  if (recent >= config.vacancyWeeklyLimit) {
+    return res
+      .status(429)
+      .json({ error: 'weekly_limit', limit: config.vacancyWeeklyLimit });
+  }
+
   const salaryNum = parseInt(String(b.salary).replace(/[^\d]/g, ''), 10) || 0;
+  const contactType = b.contact_type === 'phone' ? 'phone' : 'telegram';
   const info = db
     .prepare(
       `INSERT INTO vacancies
-        (employer_id, title, city, salary, salary_num, work_type, category,
-         description, requirements, schedule, address, remote, no_experience,
-         contact, status, created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'open', ?)`
+        (employer_id, title, city, salary, salary_num, work_type, work_format,
+         category, description, requirements, schedule, work_hours, experience,
+         address, remote, no_experience, contact, contact_type, contact_phone,
+         status, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'open', ?)`
     )
     .run(
       req.user.id,
@@ -220,15 +254,20 @@ app.post('/api/vacancies', auth, (req, res) => {
       b.city,
       b.salary,
       salaryNum,
-      b.work_type,
+      workFormat,
+      workFormat,
       b.category || null,
       b.description || null,
       b.requirements || null,
       b.schedule || null,
+      b.work_hours || null,
+      b.experience || null,
       b.address || null,
-      b.remote ? 1 : 0,
-      b.no_experience ? 1 : 0,
+      workFormat === 'remote' ? 1 : 0,
+      b.experience === 'none' ? 1 : 0,
       b.contact || 'Написать в Telegram',
+      contactType,
+      contactType === 'phone' ? String(b.contact_phone || '').trim() : null,
       now()
     );
   const v = db.prepare('SELECT * FROM vacancies WHERE id=?').get(info.lastInsertRowid);
@@ -287,8 +326,41 @@ app.post('/api/vacancies/:id/apply', auth, (req, res) => {
       'INSERT INTO messages (vacancy_id, from_user_id, to_user_id, text, created_at) VALUES (?,?,?,?,?)'
     )
     .run(v.id, req.user.id, v.employer_id, text, now());
+  db.prepare(
+    'INSERT OR IGNORE INTO applications (user_id, vacancy_id, created_at) VALUES (?,?,?)'
+  ).run(req.user.id, v.id, now());
   const msg = db.prepare('SELECT * FROM messages WHERE id=?').get(info.lastInsertRowid);
   res.json({ message: msg, peer_id: v.employer_id, vacancy_id: v.id });
+});
+
+// Seeker home feed: vacancies the user applied to + fresh vacancies
+// (filtered by the chosen profession/category, or all if "any").
+app.get('/api/feed', auth, (req, res) => {
+  const uid = req.user.id;
+  const appliedRows = db
+    .prepare(
+      `SELECT v.* FROM vacancies v
+       JOIN applications a ON a.vacancy_id = v.id
+       WHERE a.user_id=? ORDER BY a.created_at DESC LIMIT 50`
+    )
+    .all(uid);
+  const appliedIds = new Set(appliedRows.map((v) => v.id));
+
+  const prof = req.user.profession;
+  const useCategory = prof && prof !== 'any';
+  const freshRows = db
+    .prepare(
+      `SELECT v.* FROM vacancies v
+       WHERE v.status='open' ${useCategory ? 'AND v.category=?' : ''}
+       ORDER BY v.created_at DESC LIMIT 100`
+    )
+    .all(...(useCategory ? [prof] : []));
+
+  res.json({
+    applied: appliedRows.map(vacancyDTO),
+    fresh: freshRows.filter((v) => !appliedIds.has(v.id)).map(vacancyDTO),
+    profession: prof || null,
+  });
 });
 
 // List conversations for the current user
@@ -344,6 +416,55 @@ app.get('/api/chats/:vacancyId/:peerId', auth, (req, res) => {
     peer: peer ? { id: peer.id, name: peer.name || peer.first_name, company: peer.company, username: peer.username } : null,
     vacancy: vac || null,
   });
+});
+
+// ------------------------------- Admin -------------------------------------
+// Simple brute-force guard: max 5 attempts per user per 10 minutes.
+const adminAttempts = new Map();
+function tooManyAttempts(uid) {
+  const now = Date.now();
+  const rec = adminAttempts.get(uid) || { n: 0, ts: now };
+  if (now - rec.ts > 10 * 60 * 1000) { rec.n = 0; rec.ts = now; }
+  rec.n += 1;
+  adminAttempts.set(uid, rec);
+  return rec.n > 5;
+}
+
+function safeEqual(a, b) {
+  const ab = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+// Log in to the admin panel with the password.
+app.post('/api/admin/login', auth, (req, res) => {
+  if (!config.adminPassword) return res.status(503).json({ error: 'admin_disabled' });
+  if (tooManyAttempts(req.user.id)) return res.status(429).json({ error: 'too_many_attempts' });
+  const password = String(req.body?.password || '');
+  if (!safeEqual(password, config.adminPassword)) {
+    return res.status(401).json({ error: 'wrong_password' });
+  }
+  db.prepare('UPDATE users SET is_admin=1 WHERE id=?').run(req.user.id);
+  adminAttempts.delete(req.user.id);
+  res.json({ user: publicUser(findByTg.get(req.user.telegram_id)) });
+});
+
+function requireAdmin(req, res, next) {
+  if (!req.user.is_admin) return res.status(403).json({ error: 'not_admin' });
+  next();
+}
+
+// All vacancies (moderation view) with author contacts.
+app.get('/api/admin/vacancies', auth, requireAdmin, (req, res) => {
+  const rows = db.prepare('SELECT * FROM vacancies ORDER BY created_at DESC LIMIT 500').all();
+  res.json({ vacancies: rows.map(vacancyDTO) });
+});
+
+// Admin can remove a vacancy.
+app.delete('/api/admin/vacancies/:id', auth, requireAdmin, (req, res) => {
+  db.prepare('DELETE FROM vacancies WHERE id=?').run(req.params.id);
+  res.json({ ok: true });
 });
 
 // ---------------------------------------------------------------------------

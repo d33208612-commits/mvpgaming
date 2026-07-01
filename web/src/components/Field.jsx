@@ -1,15 +1,24 @@
-export function Field({ label, children, hint }) {
+export function Field({ label, children, hint, error, icon, required }) {
   return (
     <label className="field">
-      <span className="field-label">{label}</span>
+      <span className="field-label">
+        {icon && <span className="ic">{icon}</span>}
+        {label}
+        {required && <span className="req">*</span>}
+      </span>
       {children}
-      {hint && <span className="field-hint">{hint}</span>}
+      {error ? (
+        <span className="field-error">{error}</span>
+      ) : hint ? (
+        <span className="field-hint">{hint}</span>
+      ) : null}
     </label>
   );
 }
 
 export function TextInput(props) {
-  return <input className="input" {...props} />;
+  const { invalid, ...rest } = props;
+  return <input className={invalid ? 'input invalid' : 'input'} {...rest} />;
 }
 
 export function TextArea(props) {
@@ -33,7 +42,7 @@ export function Select({ options, placeholder, ...props }) {
   );
 }
 
-export function Chips({ options, value, onChange }) {
+export function Chips({ options, value, onChange, allowUnset = true }) {
   return (
     <div className="chips">
       {options.map((o) => {
@@ -41,12 +50,9 @@ export function Chips({ options, value, onChange }) {
         const label = typeof o === 'string' ? o : o.label;
         const active = value === val;
         return (
-          <button
-            type="button"
-            key={val}
+          <button type="button" key={val}
             className={active ? 'chip active' : 'chip'}
-            onClick={() => onChange(active ? '' : val)}
-          >
+            onClick={() => onChange(active && allowUnset ? '' : val)}>
             {label}
           </button>
         );

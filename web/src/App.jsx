@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
 import { AppContext } from './store.jsx';
 import { haptic } from './telegram.js';
+import { useLang } from './i18n.jsx';
 
 import RoleSelect from './pages/RoleSelect.jsx';
 import Home from './pages/Home.jsx';
@@ -12,13 +13,17 @@ import ProfileEdit from './pages/ProfileEdit.jsx';
 import VacancyDetail from './pages/VacancyDetail.jsx';
 import Chats from './pages/Chats.jsx';
 import Chat from './pages/Chat.jsx';
+import AdminRequests from './pages/AdminRequests.jsx';
+import AdminProfile from './pages/AdminProfile.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import Loader from './components/Loader.jsx';
 
 const NAV_EMPLOYER = ['home', 'search', 'post', 'profile'];
 const NAV_SEEKER = ['home', 'search', 'chats', 'profile'];
+const NAV_ADMIN = ['requests', 'search', 'chats', 'admin'];
 
 export default function App() {
+  const { t } = useLang();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +40,7 @@ export default function App() {
       try {
         const { user } = await api.auth();
         setUser(user);
+        if (user.is_admin) setNav({ screen: 'requests', params: {} });
       } catch (e) {
         setError(e.message);
       } finally {
@@ -54,18 +60,15 @@ export default function App() {
   if (error) {
     return (
       <div className="centered">
-        <p className="error">Ошибка авторизации: {error}</p>
-        <button className="btn" onClick={() => location.reload()}>
-          Повторить
-        </button>
+        <p className="error">{t('authError')}: {error}</p>
+        <button className="btn" onClick={() => location.reload()}>{t('retry')}</button>
       </div>
     );
   }
 
   const ctx = { user, setUser, refreshUser, navigate, nav };
 
-  // Registration step: pick a role first.
-  if (!user.role) {
+  if (!user.role && !user.is_admin) {
     return (
       <AppContext.Provider value={ctx}>
         <RoleSelect />
@@ -84,16 +87,22 @@ export default function App() {
     case 'vacancy': page = <VacancyDetail id={params.id} />; break;
     case 'chats': page = <Chats />; break;
     case 'chat': page = <Chat params={params} />; break;
-    default: page = <Home />;
+    case 'requests': page = <AdminRequests />; break;
+    case 'admin': page = <AdminProfile />; break;
+    default: page = user.is_admin ? <AdminRequests /> : <Home />;
   }
 
-  const navScreens = user.role === 'employer' ? NAV_EMPLOYER : NAV_SEEKER;
+  const navScreens = user.is_admin
+    ? NAV_ADMIN
+    : user.role === 'employer'
+    ? NAV_EMPLOYER
+    : NAV_SEEKER;
   const showNav = navScreens.includes(screen);
 
   return (
     <AppContext.Provider value={ctx}>
       <div className={showNav ? 'app with-nav' : 'app'}>{page}</div>
-      {showNav && <BottomNav />}
+      {showNav && <BottomNav tabs={navScreens} />}
     </AppContext.Provider>
   );
 }

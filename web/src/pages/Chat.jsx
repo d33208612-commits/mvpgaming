@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { haptic } from '../telegram.js';
+import { useLang } from '../i18n.jsx';
 import Header from '../components/Header.jsx';
 import Loader from '../components/Loader.jsx';
 
 export default function Chat({ params }) {
+  const { t } = useLang();
   const { vacancyId, peerId } = params;
   const [data, setData] = useState(null);
   const [text, setText] = useState('');
@@ -42,8 +44,8 @@ export default function Chat({ params }) {
 
   if (data === null) return <Loader full />;
 
-  const title = data.peer?.company || data.peer?.name || 'Чат';
-  const subtitle = data.vacancy ? `по вакансии «${data.vacancy.title}»` : undefined;
+  const title = data.peer?.company || data.peer?.name || t('chats');
+  const subtitle = data.vacancy ? t('aboutVacancy', { title: data.vacancy.title }) : undefined;
 
   return (
     <div className="page chat-page">
@@ -51,7 +53,7 @@ export default function Chat({ params }) {
 
       <div className="messages">
         {data.messages.length === 0 && (
-          <p className="empty small">Сообщений пока нет. Напишите первым.</p>
+          <p className="empty small">{t('noMessages')}</p>
         )}
         {data.messages.map((m) => {
           const mine = m.from_user_id === data.me;
@@ -73,7 +75,7 @@ export default function Chat({ params }) {
       <div className="chat-input">
         <input
           className="input"
-          placeholder="Сообщение…"
+          placeholder={t('messagePh')}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && send()}
