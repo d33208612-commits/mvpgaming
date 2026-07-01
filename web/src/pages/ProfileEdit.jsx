@@ -85,7 +85,7 @@ export default function ProfileEdit() {
           </Field>
           <Field label={t('desiredSalary')} hint={t('salaryHint')} error={errors.desired_salary}>
             <TextInput type="text" inputMode="numeric" invalid={!!errors.desired_salary}
-              placeholder="3 000 000" value={f.desired_salary} onChange={numeric('desired_salary', true)} />
+              placeholder="3000000" value={f.desired_salary} onChange={numeric('desired_salary')} />
           </Field>
           <Field label={t('about')}>
             <TextArea rows={4} value={f.about} onChange={(e) => set('about', e.target.value)} />

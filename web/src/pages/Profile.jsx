@@ -1,6 +1,6 @@
 import { useApp } from '../store.jsx';
 import { useLang } from '../i18n.jsx';
-import { formatDate, labelOf } from '../constants.js';
+import { formatDate, labelOf, formatSalary } from '../constants.js';
 import Header from '../components/Header.jsx';
 
 export default function Profile() {
@@ -46,7 +46,7 @@ export default function Profile() {
           <InfoRow label={t('age')} value={user.age ? `${user.age}` : '—'} />
           <InfoRow label={t('city')} value={labelOf(user.city, lang) || '—'} />
           <InfoRow label={t('profession')} value={user.profession ? labelOf(user.profession, lang) : '—'} />
-          <InfoRow label={t('desiredSalary')} value={user.desired_salary || '—'} />
+          <InfoRow label={t('desiredSalary')} value={user.desired_salary ? formatSalary(user.desired_salary, lang) : '—'} />
           <InfoRow label={t('about')} value={user.about || '—'} />
           <InfoRow label={t('registeredAt')} value={formatDate(user.created_at, lang)} />
         </div>

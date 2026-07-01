@@ -246,7 +246,7 @@ app.post('/api/vacancies', auth, (req, res) => {
          category, description, requirements, schedule, work_hours, experience,
          address, remote, no_experience, contact, contact_type, contact_phone,
          status, created_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'open', ?)`
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending', ?)`
     )
     .run(
       req.user.id,
@@ -455,10 +455,58 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// All vacancies (moderation view) with author contacts.
+// All vacancies (moderation view) with author contacts — pending first.
 app.get('/api/admin/vacancies', auth, requireAdmin, (req, res) => {
-  const rows = db.prepare('SELECT * FROM vacancies ORDER BY created_at DESC LIMIT 500').all();
+  const rows = db
+    .prepare(
+      `SELECT * FROM vacancies
+       ORDER BY (status='pending') DESC, created_at DESC LIMIT 500`
+    )
+    .all();
   res.json({ vacancies: rows.map(vacancyDTO) });
+});
+
+// Approve (publish) or reject a vacancy.
+app.post('/api/admin/vacancies/:id/moderate', auth, requireAdmin, (req, res) => {
+  const v = db.prepare('SELECT * FROM vacancies WHERE id=?').get(req.params.id);
+  if (!v) return res.status(404).json({ error: 'not_found' });
+  const action = req.body?.action;
+  const status = action === 'approve' ? 'open' : action === 'reject' ? 'rejected' : null;
+  if (!status) return res.status(400).json({ error: 'bad_action' });
+  db.prepare('UPDATE vacancies SET status=? WHERE id=?').run(status, v.id);
+  res.json({ vacancy: vacancyDTO(db.prepare('SELECT * FROM vacancies WHERE id=?').get(v.id)) });
+});
+
+// Admin edits any vacancy field.
+app.put('/api/admin/vacancies/:id', auth, requireAdmin, (req, res) => {
+  const v = db.prepare('SELECT * FROM vacancies WHERE id=?').get(req.params.id);
+  if (!v) return res.status(404).json({ error: 'not_found' });
+  const b = req.body || {};
+  const salaryNum = b.salary != null
+    ? parseInt(String(b.salary).replace(/[^\d]/g, ''), 10) || 0
+    : v.salary_num;
+  db.prepare(
+    `UPDATE vacancies SET title=?, city=?, salary=?, salary_num=?, category=?,
+       work_format=?, schedule=?, work_hours=?, experience=?, description=?,
+       requirements=?, address=?, contact_type=?, contact_phone=? WHERE id=?`
+  ).run(
+    b.title ?? v.title,
+    b.city ?? v.city,
+    b.salary ?? v.salary,
+    salaryNum,
+    b.category ?? v.category,
+    b.work_format ?? v.work_format,
+    b.schedule ?? v.schedule,
+    b.work_hours ?? v.work_hours,
+    b.experience ?? v.experience,
+    b.description ?? v.description,
+    b.requirements ?? v.requirements,
+    b.address ?? v.address,
+    b.contact_type ?? v.contact_type,
+    b.contact_phone ?? v.contact_phone,
+    v.id
+  );
+  res.json({ vacancy: vacancyDTO(db.prepare('SELECT * FROM vacancies WHERE id=?').get(v.id)) });
 });
 
 // Admin can remove a vacancy.

@@ -31,6 +31,7 @@ export default function PostJob() {
     contact_type: 'telegram', contact_phone: '',
   });
   const [busy, setBusy] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
 
@@ -44,6 +45,17 @@ export default function PostJob() {
     }
     setErrors((x) => ({ ...x, phone: null }));
     set('contact_phone', val);
+  }
+
+  // Salary: digits only (no spaces, text or ranges).
+  function onSalary(e) {
+    const val = e.target.value;
+    if (/[^\d]/.test(val)) {
+      setErrors((x) => ({ ...x, salary: t('onlyDigits') }));
+      return;
+    }
+    setErrors((x) => ({ ...x, salary: null }));
+    set('salary', val);
   }
 
   async function submit() {
@@ -62,8 +74,8 @@ export default function PostJob() {
       contact: f.contact_type === 'phone' ? f.contact_phone : t('howToApply'),
     };
     try {
-      const { vacancy } = await api.createVacancy(payload);
-      navigate('vacancy', { id: vacancy.id });
+      await api.createVacancy(payload);
+      setSubmitted(true);
     } catch (e) {
       let msg = t('errGeneric', { msg: e.message });
       if (e.code === 'banned_word') msg = t('errBanned');
@@ -71,6 +83,20 @@ export default function PostJob() {
       alert(msg);
       setBusy(false);
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="page">
+        <Header title={t('newVacancy')} back="home" />
+        <div className="pending-screen">
+          <div className="pending-check">✓</div>
+          <h2>{t('pendingTitle')}</h2>
+          <p>{t('pendingNotice')}</p>
+          <button className="btn" onClick={() => navigate('home')}>{t('done')}</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -87,9 +113,9 @@ export default function PostJob() {
           value={f.city} onChange={(e) => set('city', e.target.value)} />
       </Field>
 
-      <Field label={t('salary')} hint={t('salaryHint')} required>
-        <TextInput placeholder={t('salaryPh')} value={f.salary}
-          onChange={(e) => set('salary', e.target.value)} />
+      <Field label={t('salary')} hint={t('salaryHint')} error={errors.salary} required>
+        <TextInput type="text" inputMode="numeric" invalid={!!errors.salary}
+          placeholder="3000000" value={f.salary} onChange={onSalary} />
       </Field>
 
       <Field label={t('workFormat')} required>

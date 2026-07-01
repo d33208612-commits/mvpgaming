@@ -3,7 +3,7 @@ import { api } from '../api.js';
 import { useApp } from '../store.jsx';
 import { useLang } from '../i18n.jsx';
 import { haptic, openTelegramChat, openPhone } from '../telegram.js';
-import { labelOf, timeAgo } from '../constants.js';
+import { labelOf, timeAgo, formatSalary } from '../constants.js';
 import Header from '../components/Header.jsx';
 import Loader from '../components/Loader.jsx';
 
@@ -54,7 +54,7 @@ export default function VacancyDetail({ id }) {
 
       <div className="detail-head">
         <h1>{v.title}</h1>
-        <div className="salary big">{v.salary}</div>
+        <div className="salary big">{formatSalary(v.salary, lang)}</div>
         <div className="vac-tags">
           <span className="tag">📍 {labelOf(v.city, lang) || v.city}</span>
           {format && <span className="tag">{labelOf(format, lang)}</span>}

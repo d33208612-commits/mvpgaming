@@ -7,7 +7,7 @@ import Header from '../components/Header.jsx';
 import Loader from '../components/Loader.jsx';
 
 export default function Chats() {
-  const { navigate } = useApp();
+  const { navigate, user } = useApp();
   const { t, lang } = useLang();
   const [chats, setChats] = useState(null);
 
@@ -21,7 +21,7 @@ export default function Chats() {
       {chats === null ? (
         <Loader />
       ) : chats.length === 0 ? (
-        <div className="empty">{t('noChats')}</div>
+        <div className="empty">{user.is_admin ? t('noChatsAdmin') : t('noChats')}</div>
       ) : (
         <div className="chat-list">
           {chats.map((c) => {

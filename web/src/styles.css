@@ -87,7 +87,7 @@ body {
 .lang-item .check { margin-left: auto; color: var(--accent-2); }
 
 /* ---------- Header ---------- */
-.header { display: flex; align-items: center; gap: 12px; padding: 16px 0 14px; position: sticky; top: 0; z-index: 10; background: linear-gradient(var(--bg) 72%, transparent); }
+.header { display: flex; align-items: center; gap: 12px; padding: 16px 0 14px; }
 .header-titles { flex: 1; min-width: 0; }
 .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
 .header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
@@ -185,6 +185,15 @@ body {
 .detail-head { padding: 6px 0 4px; }
 .detail-head h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
 .closed-badge { display: inline-block; margin-top: 10px; background: rgba(255,90,106,0.14); color: var(--red); font-weight: 700; font-size: 13px; padding: 5px 12px; border-radius: 9px; }
+.status-badge { font-size: 12px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.status-badge.pending { background: rgba(245,183,49,0.16); color: #f5b731; }
+.status-badge.open { background: rgba(46,230,160,0.15); color: var(--green); }
+.status-badge.rejected { background: rgba(255,90,106,0.16); color: var(--red); }
+.status-badge.closed { background: var(--panel-3); color: var(--muted); }
+.pending-screen { min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 24px; }
+.pending-check { width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; background: rgba(46,230,160,0.14); color: var(--green); font-size: 44px; }
+.pending-screen h2 { font-size: 22px; font-weight: 800; }
+.pending-screen p { color: var(--muted); max-width: 300px; }
 .detail-section { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; margin-top: 11px; }
 .detail-section h3 { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
 .detail-section p { white-space: pre-wrap; }

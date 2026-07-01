@@ -59,6 +59,11 @@ export const CITIES = [
   { value: 'Наманган', ru: 'Наманган', uz: 'Namangan' },
   { value: 'Фергана', ru: 'Фергана', uz: 'Farg‘ona' },
   { value: 'Нукус', ru: 'Нукус', uz: 'Nukus' },
+  { value: 'Карши', ru: 'Карши', uz: 'Qarshi' },
+  { value: 'Джизак', ru: 'Джизак', uz: 'Jizzax' },
+  { value: 'Алмалык', ru: 'Алмалык', uz: 'Olmaliq' },
+  { value: 'Ургенч', ru: 'Ургенч', uz: 'Urganch' },
+  { value: 'Хива', ru: 'Хива', uz: 'Xiva' },
   { value: 'Другой', ru: 'Другой', uz: 'Boshqa' },
 ];
 
@@ -96,6 +101,17 @@ const TIME = {
   ru: { now: 'только что', min: 'мин назад', hour: 'ч назад', day: 'дн назад' },
   uz: { now: 'hozirgina', min: 'daq oldin', hour: 'soat oldin', day: 'kun oldin' },
 };
+
+// Show a numeric salary grouped with spaces + currency; pass through free text.
+export function formatSalary(value, lang = 'ru') {
+  const s = String(value ?? '').trim();
+  if (!s) return '';
+  if (/^\d+$/.test(s)) {
+    const grouped = s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return `${grouped} ${lang === 'uz' ? "so‘m" : 'сум'}`;
+  }
+  return s;
+}
 
 export function formatDate(ts, lang = 'ru') {
   return new Date(ts * 1000).toLocaleDateString(lang === 'uz' ? 'uz-UZ' : 'ru-RU', {

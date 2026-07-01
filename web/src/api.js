@@ -56,6 +56,9 @@ export const api = {
   feed: () => request('/feed'),
   adminLogin: (password) => request('/admin/login', { method: 'POST', body: { password } }),
   adminVacancies: () => request('/admin/vacancies'),
+  adminModerate: (id, action) =>
+    request(`/admin/vacancies/${id}/moderate`, { method: 'POST', body: { action } }),
+  adminUpdate: (id, data) => request(`/admin/vacancies/${id}`, { method: 'PUT', body: data }),
   adminDelete: (id) => request(`/admin/vacancies/${id}`, { method: 'DELETE' }),
 
   listVacancies: (filters) => request('/vacancies', { params: filters }),

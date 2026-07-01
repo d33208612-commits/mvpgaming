@@ -14,6 +14,7 @@ import VacancyDetail from './pages/VacancyDetail.jsx';
 import Chats from './pages/Chats.jsx';
 import Chat from './pages/Chat.jsx';
 import AdminRequests from './pages/AdminRequests.jsx';
+import AdminEditVacancy from './pages/AdminEditVacancy.jsx';
 import AdminProfile from './pages/AdminProfile.jsx';
 import BottomNav from './components/BottomNav.jsx';
 import Loader from './components/Loader.jsx';
@@ -88,6 +89,7 @@ export default function App() {
     case 'chats': page = <Chats />; break;
     case 'chat': page = <Chat params={params} />; break;
     case 'requests': page = <AdminRequests />; break;
+    case 'adminEdit': page = <AdminEditVacancy id={params.id} />; break;
     case 'admin': page = <AdminProfile />; break;
     default: page = user.is_admin ? <AdminRequests /> : <Home />;
   }
