@@ -18,4 +18,10 @@ services:
         value: "0"
       - key: RUN_BOT
         value: "1"
+      - key: ADMIN_PASSWORD
+        sync: false          # Render will prompt you to enter it securely
+      - key: SUPPORT_USERNAME
+        value: developer_kd  # Telegram username opened by the "Поддержка" button
+      - key: VACANCY_WEEKLY_LIMIT
+        value: "5"
       # PUBLIC_URL is auto-detected from RENDER_EXTERNAL_URL — no need to set it.
